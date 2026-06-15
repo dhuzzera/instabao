@@ -115,6 +115,11 @@ function AdminPage() {
             <Button variant="outline" onClick={toggleStatus}>
               {ev?.status === "active" ? "Finalizar evento" : "Reativar"}
             </Button>
+            <Button asChild variant="outline">
+              <Link to="/event/$id/afterfest" params={{ id }} target="_blank">
+                <Sparkles className="h-4 w-4 mr-2" /> AfterFest
+              </Link>
+            </Button>
             <Button asChild>
               <Link to="/event/$id/tv" params={{ id }} target="_blank">
                 <Tv className="h-4 w-4 mr-2" /> Abrir telão
