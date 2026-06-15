@@ -194,6 +194,6 @@ function UploadPage() {
           </p>
         </form>
       </main>
-    </div>
+    </EventThemeScene>
   );
 }
