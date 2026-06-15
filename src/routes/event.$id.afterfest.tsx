@@ -27,7 +27,22 @@ function AfterFestPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [downloading, setDownloading] = useState(false);
+  const [query, setQuery] = useState("");
   const clientId = useMemo(() => getClientId(), []);
+
+  const filteredPhotos = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return photos;
+    return photos.filter(p => (p.guest_name ?? "").toLowerCase().includes(q));
+  }, [photos, query]);
+
+  function formatDateTime(iso: string) {
+    try {
+      return new Date(iso).toLocaleString("pt-BR", {
+        day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+      });
+    } catch { return ""; }
+  }
 
   function toggleSelect(photoId: string) {
     setSelected(prev => {
