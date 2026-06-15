@@ -36,6 +36,8 @@ function TVPage() {
   const [slideB, setSlideB] = useState<Slide | null>(null);
   const [showA, setShowA] = useState(true);
   const idxRef = useRef({ photoIdx: 0, blockCount: 0, sponsorIdx: 0 });
+  const freshQueueRef = useRef<Photo[]>([]);
+  const seenIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (typeof window !== "undefined") {
