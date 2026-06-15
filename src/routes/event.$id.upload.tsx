@@ -75,7 +75,7 @@ function UploadPage() {
     });
   }
 
-  async function rotateItem(itemId: string, deg: number) {
+  async function rotateItem(itemId: string, deg: 90 | 180 | 270) {
     const it = items.find(i => i.id === itemId);
     if (!it) return;
     const rotated = await rotateImage(it.file, deg);
