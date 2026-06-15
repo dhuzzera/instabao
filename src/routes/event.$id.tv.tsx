@@ -17,6 +17,7 @@ const PHOTOS_PER_BLOCK = 5;
 function TVPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
+  const [status, setStatus] = useState<string>("active");
   const photosRef = useRef<Photo[]>([]);
   const sponsorsRef = useRef<Sponsor[]>([]);
   const [, force] = useState(0);
@@ -26,10 +27,10 @@ function TVPage() {
   // Fetch initial data
   useEffect(() => {
     (async () => {
-      const { data: ev } = await supabase.from("events").select("name").eq("id", id).single();
-      if (ev) setEventName(ev.name);
+      const { data: ev } = await supabase.from("events").select("name,status").eq("id", id).single();
+      if (ev) { setEventName(ev.name); setStatus(ev.status); }
       const { data: ph } = await supabase
-        .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(200);
+        .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
       photosRef.current = (ph ?? []) as Photo[];
       const { data: sp } = await supabase
         .from("sponsors").select("*").eq("event_id", id).order("position");
@@ -70,7 +71,8 @@ function TVPage() {
       const state = idxRef.current;
 
       // Decide if we should show sponsor block (after PHOTOS_PER_BLOCK photos)
-      if (state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
+      // Skip sponsors in afterfest/memory mode
+      if (status === "active" && state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
         const sp = sponsors[state.sponsorIdx % sponsors.length];
         state.sponsorIdx = (state.sponsorIdx + 1) % Math.max(sponsors.length, 1);
         state.blockCount = 0;
@@ -94,7 +96,7 @@ function TVPage() {
 
     next();
     return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, []);
+  }, [status]);
 
   // Fullscreen helper
   function goFullscreen() {
@@ -149,7 +151,9 @@ function TVPage() {
           <p className="font-display text-2xl">{eventName}</p>
         </div>
       )}
-      <div className="absolute bottom-4 right-6 text-xs opacity-60">InstaBão · ao vivo</div>
+      <div className="absolute bottom-4 right-6 text-xs opacity-60">
+        InstaBão · {status === "finished" ? "memórias" : "ao vivo"}
+      </div>
     </div>
   );
 }

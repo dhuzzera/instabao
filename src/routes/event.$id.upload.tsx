@@ -24,6 +24,7 @@ export const Route = createFileRoute("/event/$id/upload")({
 function UploadPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
+  const [eventStatus, setEventStatus] = useState<string>("active");
   const [guest, setGuest] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -32,8 +33,8 @@ function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase.from("events").select("name").eq("id", id).single()
-      .then(({ data }) => { if (data) setEventName(data.name); });
+    supabase.from("events").select("name,status").eq("id", id).single()
+      .then(({ data }) => { if (data) { setEventName(data.name); setEventStatus(data.status); } });
   }, [id]);
 
   useEffect(() => {
@@ -62,6 +63,21 @@ function UploadPage() {
     } finally {
       setSending(false);
     }
+  }
+
+  if (eventStatus === "finished") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 paper-noise text-center">
+        <img src={logoAsset.url} alt="InstaBão" className="h-20 w-20 rounded-2xl mb-4" />
+        <h1 className="text-4xl font-display text-foreground">A festa acabou 🎉</h1>
+        <p className="mt-2 text-muted-foreground max-w-sm">
+          Este evento foi finalizado. Mas as memórias ficam — veja todas as fotos no AfterFest.
+        </p>
+        <Button asChild className="mt-8">
+          <Link to="/event/$id/afterfest" params={{ id }}>Ver AfterFest</Link>
+        </Button>
+      </div>
+    );
   }
 
   if (sent) {

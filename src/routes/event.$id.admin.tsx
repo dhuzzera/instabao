@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft } from "lucide-react";
+import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles } from "lucide-react";
 
 type EventRow = { id: string; name: string; event_date: string | null; status: string };
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
@@ -114,6 +114,11 @@ function AdminPage() {
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={toggleStatus}>
               {ev?.status === "active" ? "Finalizar evento" : "Reativar"}
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/event/$id/afterfest" params={{ id }} target="_blank">
+                <Sparkles className="h-4 w-4 mr-2" /> AfterFest
+              </Link>
             </Button>
             <Button asChild>
               <Link to="/event/$id/tv" params={{ id }} target="_blank">
