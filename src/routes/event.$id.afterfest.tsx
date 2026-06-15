@@ -277,17 +277,18 @@ function AfterFestPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {photos.map((p, i) => {
+            {filteredPhotos.map((p, i) => {
               const count = likeCounts[p.id] ?? 0;
               const liked = myLikes.has(p.id);
               return (
                 <div
                   key={p.id}
-                  className={`group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 transition ${
+                  className={`group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 transition animate-fade-in opacity-0 ${
                     selectMode && selected.has(p.id)
                       ? "border-foreground ring-4 ring-foreground/30"
                       : "border-foreground/10 hover:border-foreground"
                   }`}
+                  style={{ animationDelay: `${Math.min(i, 20) * 40}ms`, animationFillMode: "forwards" }}
                 >
                   <button
                     onClick={() => selectMode ? toggleSelect(p.id) : setLightboxIdx(i)}
@@ -302,11 +303,12 @@ function AfterFestPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
                   </button>
-                  {p.guest_name && (
-                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2 text-left font-display text-base pr-12">
-                      {p.guest_name}
-                    </div>
-                  )}
+                  <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-2 text-left pr-12">
+                    {p.guest_name && (
+                      <div className="font-display text-base leading-tight truncate">{p.guest_name}</div>
+                    )}
+                    <div className="text-[10px] text-white/70 mt-0.5">{formatDateTime(p.created_at)}</div>
+                  </div>
                   <button
                     onClick={() => toggleLike(p.id)}
                     className={`absolute bottom-2 right-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold backdrop-blur transition active:scale-90 ${
