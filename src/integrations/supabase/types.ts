@@ -181,6 +181,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_event: { Args: { _event_id: string }; Returns: boolean }
       delete_my_like: {
         Args: { _client_id: string; _photo_id: string }
         Returns: undefined
