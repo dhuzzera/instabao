@@ -16,6 +16,8 @@ import { Route as EventIdUploadRouteImport } from './routes/event.$id.upload'
 import { Route as EventIdTvRouteImport } from './routes/event.$id.tv'
 import { Route as EventIdAfterfestRouteImport } from './routes/event.$id.afterfest'
 import { Route as EventIdAdminRouteImport } from './routes/event.$id.admin'
+import { Route as ECodeTvRouteImport } from './routes/e.$code.tv'
+import { Route as ECodeAdminRouteImport } from './routes/e.$code.admin'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -52,11 +54,23 @@ const EventIdAdminRoute = EventIdAdminRouteImport.update({
   path: '/event/$id/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ECodeTvRoute = ECodeTvRouteImport.update({
+  id: '/tv',
+  path: '/tv',
+  getParentRoute: () => ECodeRoute,
+} as any)
+const ECodeAdminRoute = ECodeAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => ECodeRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/e/$code': typeof ECodeRoute
+  '/e/$code': typeof ECodeRouteWithChildren
+  '/e/$code/admin': typeof ECodeAdminRoute
+  '/e/$code/tv': typeof ECodeTvRoute
   '/event/$id/admin': typeof EventIdAdminRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
@@ -65,7 +79,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/e/$code': typeof ECodeRoute
+  '/e/$code': typeof ECodeRouteWithChildren
+  '/e/$code/admin': typeof ECodeAdminRoute
+  '/e/$code/tv': typeof ECodeTvRoute
   '/event/$id/admin': typeof EventIdAdminRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
@@ -75,7 +91,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/e/$code': typeof ECodeRoute
+  '/e/$code': typeof ECodeRouteWithChildren
+  '/e/$code/admin': typeof ECodeAdminRoute
+  '/e/$code/tv': typeof ECodeTvRoute
   '/event/$id/admin': typeof EventIdAdminRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
@@ -87,6 +105,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/e/$code'
+    | '/e/$code/admin'
+    | '/e/$code/tv'
     | '/event/$id/admin'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
@@ -96,6 +116,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/e/$code'
+    | '/e/$code/admin'
+    | '/e/$code/tv'
     | '/event/$id/admin'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
@@ -105,6 +127,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/e/$code'
+    | '/e/$code/admin'
+    | '/e/$code/tv'
     | '/event/$id/admin'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
@@ -114,7 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
-  ECodeRoute: typeof ECodeRoute
+  ECodeRoute: typeof ECodeRouteWithChildren
   EventIdAdminRoute: typeof EventIdAdminRoute
   EventIdAfterfestRoute: typeof EventIdAfterfestRoute
   EventIdTvRoute: typeof EventIdTvRoute
@@ -172,13 +196,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventIdAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/e/$code/tv': {
+      id: '/e/$code/tv'
+      path: '/tv'
+      fullPath: '/e/$code/tv'
+      preLoaderRoute: typeof ECodeTvRouteImport
+      parentRoute: typeof ECodeRoute
+    }
+    '/e/$code/admin': {
+      id: '/e/$code/admin'
+      path: '/admin'
+      fullPath: '/e/$code/admin'
+      preLoaderRoute: typeof ECodeAdminRouteImport
+      parentRoute: typeof ECodeRoute
+    }
   }
 }
+
+interface ECodeRouteChildren {
+  ECodeAdminRoute: typeof ECodeAdminRoute
+  ECodeTvRoute: typeof ECodeTvRoute
+}
+
+const ECodeRouteChildren: ECodeRouteChildren = {
+  ECodeAdminRoute: ECodeAdminRoute,
+  ECodeTvRoute: ECodeTvRoute,
+}
+
+const ECodeRouteWithChildren = ECodeRoute._addFileChildren(ECodeRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
-  ECodeRoute: ECodeRoute,
+  ECodeRoute: ECodeRouteWithChildren,
   EventIdAdminRoute: EventIdAdminRoute,
   EventIdAfterfestRoute: EventIdAfterfestRoute,
   EventIdTvRoute: EventIdTvRoute,
