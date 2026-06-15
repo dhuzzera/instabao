@@ -37,7 +37,7 @@ function AfterFestPage() {
           <ArrowLeft className="h-3.5 w-3.5" /> Eventos
         </Link>
         <div className="flex items-center gap-4 mt-4">
-          <img src={logoAsset.src} alt="InstaBão" className="h-16 w-16 rounded-2xl" />
+          <img src={logoAsset.url} alt="InstaBão" className="h-16 w-16 rounded-2xl" />
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">AfterFest</p>
             <h1 className="text-4xl md:text-5xl font-display text-foreground truncate">
