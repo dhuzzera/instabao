@@ -163,6 +163,14 @@ function TVPage() {
       return { slide: { kind: "photo", photo: ph }, ms: photoMs };
     }
 
+    function commit(slide: Slide, ms: number) {
+      if (cancelled) return;
+      if (useA) setSlideA(slide); else setSlideB(slide);
+      setShowA(useA);
+      useA = !useA;
+      timer = setTimeout(next, ms);
+    }
+
     function next() {
       if (cancelled) return;
       const { slide, ms } = pick();
@@ -170,11 +178,18 @@ function TVPage() {
         timer = setTimeout(next, ms);
         return;
       }
-      // Load into hidden layer, then flip
-      if (useA) setSlideA(slide); else setSlideB(slide);
-      setShowA(useA);
-      useA = !useA;
-      timer = setTimeout(next, ms);
+      // Preload image first so we never flash the previous photo while the
+      // new one is still downloading (browser keeps last frame until decoded).
+      const url = slide.kind === "photo" ? slide.photo.image_url : slide.sponsor.image_url;
+      const img = new Image();
+      let done = false;
+      const finish = () => { if (done || cancelled) return; done = true; commit(slide, ms); };
+      img.onload = finish;
+      img.onerror = finish;
+      img.src = url;
+      if (img.complete) finish();
+      // Safety: don't wait forever on a slow image.
+      timer = setTimeout(finish, 4000);
     }
 
     next();
