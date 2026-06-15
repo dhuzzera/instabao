@@ -77,6 +77,39 @@ function AdminPage() {
     return () => { supabase.removeChannel(ch); };
   }, [id]);
 
+  const [downloadingAll, setDownloadingAll] = useState(false);
+  async function downloadAllPhotos() {
+    if (photos.length === 0 || downloadingAll) return;
+    setDownloadingAll(true);
+    const tId = toast.loading(`Preparando ${photos.length} fotos...`);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      let done = 0;
+      await Promise.all(photos.map(async (p, i) => {
+        try {
+          const res = await fetch(p.image_url);
+          const blob = await res.blob();
+          const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+          const namePart = p.guest_name ? p.guest_name.replace(/[^a-z0-9]+/gi, "_").slice(0, 30) : "foto";
+          zip.file(`${String(i + 1).padStart(3, "0")}_${namePart}.${ext}`, blob);
+        } catch {}
+        done++;
+        toast.loading(`Baixando ${done}/${photos.length}...`, { id: tId });
+      }));
+      const out = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(out);
+      const a = document.createElement("a");
+      a.href = url; a.download = `fotos-${ev?.name?.replace(/[^a-z0-9]+/gi, "_") ?? "evento"}.zip`; a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Download pronto!", { id: tId });
+    } catch (e: any) {
+      toast.error("Erro ao baixar", { id: tId, description: e?.message });
+    } finally {
+      setDownloadingAll(false);
+    }
+  }
+
   function downloadQR() {
     const canvas = qrRef.current?.querySelector("canvas");
     if (!canvas) return;
