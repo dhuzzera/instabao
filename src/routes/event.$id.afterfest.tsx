@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClientId } from "@/lib/client-id";
-import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X, Heart, CheckCircle2, Circle } from "lucide-react";
+import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X, Heart, CheckCircle2, Circle, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
