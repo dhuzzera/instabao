@@ -200,17 +200,22 @@ export function PhotoFrame({
   const corners = FRAME_CORNERS[t.key] ?? FRAME_CORNERS.default;
   const [ratio, setRatio] = useState<number | null>(null);
 
-  // Frame fits image naturally: portrait → portrait, landscape → landscape.
-  // Image is never cropped (no object-cover zoom).
+  // Frame fits image naturally regardless of aspect ratio (portrait, landscape,
+  // panorama, square). aspect-ratio + max width/height lets the browser pick the
+  // largest box that fits both constraints without distorting the image.
   const frameStyle: React.CSSProperties = ratio
-    ? ratio >= 1
-      ? { width: "min(100%, calc((100vh - 6rem) * " + ratio + "))", aspectRatio: ratio }
-      : { height: "min(100%, calc((100vw - 6rem) / " + (1 / ratio) + "))", aspectRatio: ratio }
-    : { width: "100%", height: "100%" };
+    ? {
+        aspectRatio: ratio,
+        maxWidth: "calc(100vw - 3rem)",
+        maxHeight: "calc(100vh - 3rem)",
+        width: ratio >= 1 ? "calc(100vh - 3rem) * " + ratio : undefined,
+        height: ratio < 1 ? "calc(100vw - 3rem) / " + (1 / ratio) : undefined,
+      }
+    : { width: "min(100%, 100vw - 3rem)", height: "min(100%, 100vh - 3rem)" };
 
   return (
-    <div className="absolute inset-0 grid place-items-center p-6 md:p-10">
-      <div className="relative max-w-full max-h-full" style={frameStyle}>
+    <div className="absolute inset-0 grid place-items-center p-4 md:p-6">
+      <div className="relative" style={frameStyle}>
         <div
           className="relative w-full h-full rounded-3xl overflow-hidden"
           style={{
