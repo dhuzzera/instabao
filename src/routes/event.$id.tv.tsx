@@ -167,8 +167,9 @@ function TVPage() {
       style={{ background: t.backgroundDark }}
       onClick={goFullscreen}
     >
-      <SlideLayer slide={slideA} visible={showA} />
-      <SlideLayer slide={slideB} visible={!showA} />
+      <SlideLayer slide={slideA} visible={showA} theme={theme} />
+      <SlideLayer slide={slideB} visible={!showA} theme={theme} />
+
 
       {/* Themed particles + top strip overlay (above photos, no clicks) */}
       <ThemeOverlay theme={theme} />
