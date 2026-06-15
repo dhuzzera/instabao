@@ -101,25 +101,26 @@ function TVPage() {
       const photos = photosRef.current;
       const sponsors = sponsorsRef.current;
       const state = idxRef.current;
+      const { photoMs, sponsorMs, perBlock } = timingRef.current;
 
       // Brand-new uploads jump the queue so guests see their photo right away.
       if (freshQueueRef.current.length > 0) {
         const ph = freshQueueRef.current.shift()!;
         state.blockCount += 1;
-        return { slide: { kind: "photo", photo: ph }, ms: PHOTO_MS };
+        return { slide: { kind: "photo", photo: ph }, ms: photoMs };
       }
 
-      if (status === "active" && state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
+      if (status === "active" && state.blockCount >= perBlock && sponsors.length > 0) {
         const sp = sponsors[state.sponsorIdx % sponsors.length];
         state.sponsorIdx = (state.sponsorIdx + 1) % Math.max(sponsors.length, 1);
         state.blockCount = 0;
-        return { slide: { kind: "sponsor", sponsor: sp }, ms: SPONSOR_MS };
+        return { slide: { kind: "sponsor", sponsor: sp }, ms: sponsorMs };
       }
       if (photos.length === 0) return { slide: null, ms: 2000 };
       const ph = photos[state.photoIdx % photos.length];
       state.photoIdx = (state.photoIdx + 1) % Math.max(photos.length, 1);
       state.blockCount += 1;
-      return { slide: { kind: "photo", photo: ph }, ms: PHOTO_MS };
+      return { slide: { kind: "photo", photo: ph }, ms: photoMs };
     }
 
     function next() {
