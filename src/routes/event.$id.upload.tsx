@@ -24,6 +24,7 @@ export const Route = createFileRoute("/event/$id/upload")({
 function UploadPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
+  const [eventStatus, setEventStatus] = useState<string>("active");
   const [guest, setGuest] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -32,8 +33,8 @@ function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase.from("events").select("name").eq("id", id).single()
-      .then(({ data }) => { if (data) setEventName(data.name); });
+    supabase.from("events").select("name,status").eq("id", id).single()
+      .then(({ data }) => { if (data) { setEventName(data.name); setEventStatus(data.status); } });
   }, [id]);
 
   useEffect(() => {
