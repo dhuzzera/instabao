@@ -173,3 +173,50 @@ function particleGlyph(kind: ParticleKind, i: number) {
 }
 
 export type { EventTheme };
+
+// Decorative themed frame for photos on the TV slideshow.
+// Adds a gradient ring + corner emoji decorations matching the theme.
+const FRAME_CORNERS: Record<string, string[]> = {
+  default: ["✨", "✨", "✨", "✨"],
+  junina: ["🌽", "🔥", "🎶", "🌶️"],
+  halloween: ["🎃", "👻", "🕷️", "🦇"],
+  natal: ["🎄", "⭐", "🎁", "❄️"],
+  pascoa: ["🐰", "🥚", "🌸", "🐣"],
+  aniversario: ["🎂", "🎉", "🎈", "🎊"],
+  casamento: ["💍", "💖", "🌹", "💐"],
+  "ano-novo": ["🎆", "🥂", "🎇", "✨"],
+};
+
+export function PhotoFrame({ theme, children }: { theme?: string | null; children: React.ReactNode }) {
+  const t = getTheme(theme);
+  const corners = FRAME_CORNERS[t.key] ?? FRAME_CORNERS.default;
+  return (
+    <div className="absolute inset-0 p-6 md:p-10">
+      <div
+        className="relative w-full h-full rounded-3xl overflow-hidden"
+        style={{
+          padding: "8px",
+          background: t.gradient,
+          boxShadow: `0 0 60px ${t.accent}55, 0 0 0 2px ${t.accent}33 inset`,
+        }}
+      >
+        <div className="relative w-full h-full rounded-[20px] overflow-hidden bg-black">
+          {children}
+        </div>
+        {/* Corner decorations */}
+        <span className="absolute -top-3 -left-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[-15deg]">
+          {corners[0]}
+        </span>
+        <span className="absolute -top-3 -right-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[15deg]">
+          {corners[1]}
+        </span>
+        <span className="absolute -bottom-3 -left-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[15deg]">
+          {corners[2]}
+        </span>
+        <span className="absolute -bottom-3 -right-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[-15deg]">
+          {corners[3]}
+        </span>
+      </div>
+    </div>
+  );
+}
