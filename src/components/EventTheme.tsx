@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getTheme, type EventTheme, type ParticleKind, type TopStrip } from "@/lib/themes";
 
 type Props = {
