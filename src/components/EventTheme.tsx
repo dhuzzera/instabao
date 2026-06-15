@@ -28,6 +28,24 @@ export function EventThemeScene({ theme, dark, children, className }: Props) {
   );
 }
 
+// Transparent overlay: just strip + particles, no background.
+// Use for layering on top of existing content (e.g. the TV slideshow).
+export function ThemeOverlay({ theme }: { theme?: string | null }) {
+  const t = getTheme(theme);
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 z-20"
+      style={{
+        ["--theme-accent" as string]: t.accent,
+        ["--theme-gradient" as string]: t.gradient,
+      }}
+    >
+      <TopStripView kind={t.topStrip} />
+      <Particles kind={t.particles} />
+    </div>
+  );
+}
+
 function TopStripView({ kind }: { kind: TopStrip }) {
   if (kind === "none") return null;
   if (kind === "bandeirinhas") {
@@ -86,7 +104,6 @@ function TopStripView({ kind }: { kind: TopStrip }) {
 }
 
 function Particles({ kind }: { kind: ParticleKind }) {
-  // Pre-compute particle positions deterministically to avoid hydration jitter
   const items = useMemo(() => {
     if (kind === "none") return [];
     const n =
@@ -109,7 +126,7 @@ function Particles({ kind }: { kind: ParticleKind }) {
   if (kind === "none") return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
       {items.map((p) => (
         <span
           key={p.i}
@@ -131,43 +148,27 @@ function Particles({ kind }: { kind: ParticleKind }) {
 
 function particleClass(kind: ParticleKind) {
   switch (kind) {
-    case "snow":
-      return "absolute select-none text-white/90 animate-theme-fall";
-    case "embers":
-      return "absolute select-none animate-theme-rise";
-    case "bats":
-      return "absolute select-none text-black/80 dark:text-white/80 animate-theme-fly";
-    case "confetti":
-      return "absolute select-none animate-theme-fall";
-    case "eggs":
-      return "absolute select-none animate-theme-drift";
-    case "petals":
-      return "absolute select-none animate-theme-drift";
-    case "fireworks":
-      return "absolute select-none animate-theme-burst";
-    default:
-      return "";
+    case "snow": return "absolute select-none text-white/90 animate-theme-fall";
+    case "embers": return "absolute select-none animate-theme-rise";
+    case "bats": return "absolute select-none text-black/80 dark:text-white/80 animate-theme-fly";
+    case "confetti": return "absolute select-none animate-theme-fall";
+    case "eggs": return "absolute select-none animate-theme-drift";
+    case "petals": return "absolute select-none animate-theme-drift";
+    case "fireworks": return "absolute select-none animate-theme-burst";
+    default: return "";
   }
 }
 
 function particleGlyph(kind: ParticleKind, i: number) {
   switch (kind) {
-    case "snow":
-      return "❄";
-    case "embers":
-      return ["🔥", "✨", "🌟"][i % 3];
-    case "bats":
-      return "🦇";
-    case "confetti":
-      return ["🎉", "🎊", "✨", "🎈"][i % 4];
-    case "eggs":
-      return ["🥚", "🐰", "🌸"][i % 3];
-    case "petals":
-      return ["🌸", "🌷", "✨"][i % 3];
-    case "fireworks":
-      return ["🎆", "🎇", "✨"][i % 3];
-    default:
-      return null;
+    case "snow": return "❄";
+    case "embers": return ["🔥", "✨", "🌟"][i % 3];
+    case "bats": return "🦇";
+    case "confetti": return ["🎉", "🎊", "✨", "🎈"][i % 4];
+    case "eggs": return ["🥚", "🐰", "🌸"][i % 3];
+    case "petals": return ["🌸", "🌷", "✨"][i % 3];
+    case "fireworks": return ["🎆", "🎇", "✨"][i % 3];
+    default: return null;
   }
 }
 
