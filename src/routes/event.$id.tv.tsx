@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
+import { EventThemeScene } from "@/components/EventTheme";
 
 export const Route = createFileRoute("/event/$id/tv")({
   head: () => ({ meta: [{ title: "Telão · InstaBão" }] }),
@@ -24,6 +25,7 @@ function TVPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
   const [status, setStatus] = useState<string>("active");
+  const [theme, setTheme] = useState<string>("default");
   const [uploadUrl, setUploadUrl] = useState("");
   const photosRef = useRef<Photo[]>([]);
   const sponsorsRef = useRef<Sponsor[]>([]);
@@ -42,8 +44,8 @@ function TVPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: ev } = await supabase.from("events").select("name,status").eq("id", id).single();
-      if (ev) { setEventName(ev.name); setStatus(ev.status); }
+      const { data: ev } = await supabase.from("events").select("name,status,theme").eq("id", id).single();
+      if (ev) { setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default"); }
       const { data: ph } = await supabase
         .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
       photosRef.current = (ph ?? []) as Photo[];
