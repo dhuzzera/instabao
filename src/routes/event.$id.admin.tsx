@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadEventFile } from "@/lib/upload";
+import { getClientId } from "@/lib/client-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,7 +84,7 @@ function AdminPage() {
     const f = e.target.files?.[0];
     if (!f) return;
     try {
-      const url = await uploadEventFile(id, f, "sponsor");
+      const { url } = await uploadEventFile(id, f, "sponsor");
       const { error } = await supabase.from("sponsors").insert({
         event_id: id, image_url: url, position: sponsors.length,
       });
@@ -99,8 +100,18 @@ function AdminPage() {
 
   async function deletePhoto(pid: string) {
     if (!confirm("Apagar esta foto?")) return;
-    const { error } = await supabase.from("photos").delete().eq("id", pid);
-    if (error) toast.error(error.message); else loadAll();
+    // Ownership is enforced server-side: only the original uploader (same device/browser)
+    // can delete a photo via this RPC. Admin moderation requires login (não implementado).
+    const { data, error } = await supabase.rpc("delete_my_photo", {
+      _photo_id: pid,
+      _client_id: getClientId(),
+    });
+    if (error) { toast.error(error.message); return; }
+    if (data === false) {
+      toast.error("Apenas quem enviou esta foto pode apagá-la.");
+      return;
+    }
+    loadAll();
   }
   async function deleteSponsor(sid: string) {
     if (!confirm("Remover patrocinador?")) return;

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadEventFile } from "@/lib/upload";
 import { compressImage } from "@/lib/compress";
 import { rotateImage } from "@/lib/rotate";
+import { getClientId } from "@/lib/client-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,9 +68,13 @@ function UploadPage() {
       setProgress("Otimizando foto…");
       const optimized = await compressImage(file);
       setProgress("Enviando pro telão…");
-      const url = await uploadEventFile(id, optimized, "photo");
+      const { url, path } = await uploadEventFile(id, optimized, "photo");
       const { error } = await supabase.from("photos").insert({
-        event_id: id, image_url: url, guest_name: guest.trim() || null,
+        event_id: id,
+        image_url: url,
+        storage_path: path,
+        client_id: getClientId(),
+        guest_name: guest.trim() || null,
       });
       if (error) throw error;
       celebrate();

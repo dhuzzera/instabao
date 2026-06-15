@@ -72,25 +72,31 @@ export type Database = {
       }
       photos: {
         Row: {
+          client_id: string | null
           created_at: string
           event_id: string
           guest_name: string | null
           id: string
           image_url: string
+          storage_path: string | null
         }
         Insert: {
+          client_id?: string | null
           created_at?: string
           event_id: string
           guest_name?: string | null
           id?: string
           image_url: string
+          storage_path?: string | null
         }
         Update: {
+          client_id?: string | null
           created_at?: string
           event_id?: string
           guest_name?: string | null
           id?: string
           image_url?: string
+          storage_path?: string | null
         }
         Relationships: [
           {
@@ -139,7 +145,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_my_like: {
+        Args: { _client_id: string; _photo_id: string }
+        Returns: undefined
+      }
+      delete_my_photo: {
+        Args: { _client_id: string; _photo_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
