@@ -51,7 +51,9 @@ function TVPage() {
       if (ev) { setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default"); }
       const { data: ph } = await supabase
         .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
-      photosRef.current = (ph ?? []) as Photo[];
+      const initial = (ph ?? []) as Photo[];
+      photosRef.current = initial;
+      seenIdsRef.current = new Set(initial.map(p => p.id));
       const { data: sp } = await supabase
         .from("sponsors").select("*").eq("event_id", id).order("position");
       sponsorsRef.current = (sp ?? []) as Sponsor[];
