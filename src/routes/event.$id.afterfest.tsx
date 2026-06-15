@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { getClientId } from "@/lib/client-id";
+import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
@@ -13,12 +14,16 @@ export const Route = createFileRoute("/event/$id/afterfest")({
 
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type EventRow = { id: string; name: string; event_date: string | null; status: string };
+type LikeRow = { photo_id: string; client_id: string };
 
 function AfterFestPage() {
   const { id } = Route.useParams();
   const [ev, setEv] = useState<EventRow | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const clientId = useMemo(() => getClientId(), []);
 
   useEffect(() => {
     (async () => {
@@ -27,9 +32,71 @@ function AfterFestPage() {
         supabase.from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }),
       ]);
       if (e) setEv(e as EventRow);
-      setPhotos((ph ?? []) as Photo[]);
+      const photosList = (ph ?? []) as Photo[];
+      setPhotos(photosList);
+
+      if (photosList.length > 0) {
+        const ids = photosList.map(p => p.id);
+        const { data: likes } = await supabase
+          .from("photo_likes")
+          .select("photo_id,client_id")
+          .in("photo_id", ids);
+        const counts: Record<string, number> = {};
+        const mine = new Set<string>();
+        for (const l of (likes ?? []) as LikeRow[]) {
+          counts[l.photo_id] = (counts[l.photo_id] ?? 0) + 1;
+          if (l.client_id === clientId) mine.add(l.photo_id);
+        }
+        setLikeCounts(counts);
+        setMyLikes(mine);
+      }
     })();
-  }, [id]);
+  }, [id, clientId]);
+
+  // Realtime new likes
+  useEffect(() => {
+    const ch = supabase.channel(`afterfest-likes-${id}`)
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "photo_likes" },
+        async (payload) => {
+          const row = (payload.new ?? payload.old) as LikeRow | undefined;
+          if (!row) return;
+          // Only react to photos in this event
+          if (!photos.some(p => p.id === row.photo_id)) return;
+          setLikeCounts(prev => {
+            const delta = payload.eventType === "INSERT" ? 1 : -1;
+            return { ...prev, [row.photo_id]: Math.max(0, (prev[row.photo_id] ?? 0) + delta) };
+          });
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [id, photos]);
+
+  async function toggleLike(photoId: string) {
+    const liked = myLikes.has(photoId);
+    // Optimistic
+    setMyLikes(prev => {
+      const n = new Set(prev);
+      if (liked) n.delete(photoId); else n.add(photoId);
+      return n;
+    });
+    setLikeCounts(prev => ({ ...prev, [photoId]: Math.max(0, (prev[photoId] ?? 0) + (liked ? -1 : 1)) }));
+    try {
+      if (liked) {
+        await supabase.from("photo_likes").delete()
+          .eq("photo_id", photoId).eq("client_id", clientId);
+      } else {
+        await supabase.from("photo_likes").insert({ photo_id: photoId, client_id: clientId });
+      }
+    } catch {
+      // Revert on error
+      setMyLikes(prev => {
+        const n = new Set(prev);
+        if (liked) n.add(photoId); else n.delete(photoId);
+        return n;
+      });
+    }
+  }
 
   const close = useCallback(() => setLightboxIdx(null), []);
   const prev = useCallback(() => {
@@ -60,15 +127,9 @@ function AfterFestPage() {
       url,
     };
     try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copiado!");
-      }
-    } catch {
-      /* user cancelled */
-    }
+      if (navigator.share) await navigator.share(shareData);
+      else { await navigator.clipboard.writeText(url); toast.success("Link copiado!"); }
+    } catch { /* user cancelled */ }
   }
 
   return (
@@ -90,7 +151,7 @@ function AfterFestPage() {
           </div>
         </div>
         <p className="mt-6 text-muted-foreground max-w-2xl">
-          {photos.length} {photos.length === 1 ? "memória" : "memórias"} da galera. Reviva, baixe e compartilhe.
+          {photos.length} {photos.length === 1 ? "memória" : "memórias"} da galera. Curta, baixe e compartilhe.
         </p>
       </header>
 
@@ -101,26 +162,45 @@ function AfterFestPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {photos.map((p, i) => (
-              <button
-                key={p.id}
-                onClick={() => setLightboxIdx(i)}
-                className="group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 border-foreground/10 hover:border-foreground transition"
-              >
-                <img
-                  src={p.image_url}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                />
-                {p.guest_name && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2 text-left font-display text-base">
-                    {p.guest_name}
-                  </div>
-                )}
-              </button>
-            ))}
+            {photos.map((p, i) => {
+              const count = likeCounts[p.id] ?? 0;
+              const liked = myLikes.has(p.id);
+              return (
+                <div
+                  key={p.id}
+                  className="group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 border-foreground/10 hover:border-foreground transition"
+                >
+                  <button
+                    onClick={() => setLightboxIdx(i)}
+                    className="absolute inset-0 w-full h-full"
+                    aria-label="Abrir foto"
+                  >
+                    <img
+                      src={p.image_url}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                  </button>
+                  {p.guest_name && (
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2 text-left font-display text-base pr-12">
+                      {p.guest_name}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => toggleLike(p.id)}
+                    className={`absolute bottom-2 right-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold backdrop-blur transition active:scale-90 ${
+                      liked ? "bg-rose-500 text-white" : "bg-white/85 text-foreground hover:bg-white"
+                    }`}
+                    aria-label={liked ? "Descurtir" : "Curtir"}
+                  >
+                    <Heart className={`h-3.5 w-3.5 ${liked ? "fill-current" : ""}`} />
+                    {count > 0 && <span>{count}</span>}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </main>
@@ -160,7 +240,16 @@ function AfterFestPage() {
             {lightbox.guest_name && (
               <p className="text-center text-white font-display text-3xl mt-4">{lightbox.guest_name}</p>
             )}
-            <div className="flex justify-center gap-3 mt-4">
+            <div className="flex justify-center gap-3 mt-4 flex-wrap">
+              <button
+                onClick={() => toggleLike(lightbox.id)}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium transition ${
+                  myLikes.has(lightbox.id) ? "bg-rose-500 text-white" : "bg-white/10 text-white hover:bg-white/20"
+                }`}
+              >
+                <Heart className={`h-4 w-4 ${myLikes.has(lightbox.id) ? "fill-current" : ""}`} />
+                {likeCounts[lightbox.id] ?? 0}
+              </button>
               <a
                 href={lightbox.image_url}
                 download
