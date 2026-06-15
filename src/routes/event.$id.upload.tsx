@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
+import { EventThemeScene } from "@/components/EventTheme";
 
 
 export const Route = createFileRoute("/event/$id/upload")({
@@ -30,6 +31,7 @@ function UploadPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
   const [eventStatus, setEventStatus] = useState<string>("active");
+  const [theme, setTheme] = useState<string>("default");
   const [guest, setGuest] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -39,8 +41,8 @@ function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase.from("events").select("name,status").eq("id", id).single()
-      .then(({ data }) => { if (data) { setEventName(data.name); setEventStatus(data.status); } });
+    supabase.from("events").select("name,status,theme").eq("id", id).single()
+      .then(({ data }) => { if (data) { setEventName(data.name); setEventStatus(data.status); setTheme(data.theme ?? "default"); } });
   }, [id]);
 
   useEffect(() => {
