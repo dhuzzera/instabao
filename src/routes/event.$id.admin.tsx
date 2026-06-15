@@ -244,6 +244,36 @@ function AdminPage() {
             </Button>
           </Card>
 
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-display text-xl text-foreground">Armazenamento</h2>
+              <span className={
+                storage.level === "danger" ? "text-xs font-bold text-destructive" :
+                storage.level === "warn" ? "text-xs font-bold text-yellow-600" :
+                "text-xs font-bold text-emerald-600"
+              }>
+                {storage.pct.toFixed(1)}%
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className={
+                  "h-full transition-all " +
+                  (storage.level === "danger" ? "bg-destructive" :
+                   storage.level === "warn" ? "bg-yellow-500" : "bg-emerald-500")
+                }
+                style={{ width: `${storage.pct}%` }}
+              />
+            </div>
+            <div className="mt-3 flex justify-between text-xs text-muted-foreground">
+              <span>~{storage.usedMB.toFixed(1)} MB de {STORAGE_LIMIT_MB} MB</span>
+              <span>~{storage.remainingPhotos.toLocaleString("pt-BR")} fotos restantes</span>
+            </div>
+            <p className="mt-2 text-[10px] text-muted-foreground leading-relaxed">
+              Estimativa baseada em ~{AVG_PHOTO_KB}KB/foto. Quando passar de 85%, finalize ou faça backup das fotos antes de continuar.
+            </p>
+          </Card>
+
           {stats && (
             <Card className="p-5">
               <h2 className="font-display text-xl text-foreground mb-3">Estatísticas</h2>
