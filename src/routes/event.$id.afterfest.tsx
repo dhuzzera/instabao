@@ -286,6 +286,15 @@ function AfterFestPage() {
                     <Heart className={`h-3.5 w-3.5 ${liked ? "fill-current" : ""}`} />
                     {count > 0 && <span>{count}</span>}
                   </button>
+                  {selectMode && (
+                    <div className="pointer-events-none absolute top-2 left-2">
+                      {selected.has(p.id) ? (
+                        <CheckCircle2 className="h-7 w-7 text-foreground fill-background" />
+                      ) : (
+                        <Circle className="h-7 w-7 text-white drop-shadow" />
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
