@@ -66,13 +66,12 @@ export function AfterFestPage({ eventId: id }: { eventId: string }) {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       let done = 0;
+      const { watermarkFromUrl } = await import("@/lib/watermark");
       await Promise.all(toDownload.map(async (p, i) => {
         try {
-          const res = await fetch(p.image_url);
-          const blob = await res.blob();
-          const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+          const blob = await watermarkFromUrl(p.image_url, { eventName: ev?.name });
           const namePart = p.guest_name ? p.guest_name.replace(/[^a-z0-9]+/gi, "_").slice(0, 30) : "foto";
-          zip.file(`${String(i + 1).padStart(3, "0")}_${namePart}.${ext}`, blob);
+          zip.file(`${String(i + 1).padStart(3, "0")}_${namePart}.jpg`, blob);
         } catch {}
         done++;
         toast.loading(`Baixando ${done}/${toDownload.length}...`, { id: tId });
