@@ -201,17 +201,18 @@ export function PhotoFrame({
   const [ratio, setRatio] = useState<number | null>(null);
 
   // Frame fits image naturally regardless of aspect ratio (portrait, landscape,
-  // panorama, square). aspect-ratio + max width/height lets the browser pick the
-  // largest box that fits both constraints without distorting the image.
+  // panorama, square). We give it the aspect-ratio + a very large base size
+  // capped by max width/height of the viewport. The browser picks the largest
+  // box that fits both constraints without cropping or distorting the image.
   const frameStyle: React.CSSProperties = ratio
     ? {
-        aspectRatio: ratio,
+        aspectRatio: String(ratio),
         maxWidth: "calc(100vw - 3rem)",
         maxHeight: "calc(100vh - 3rem)",
-        width: ratio >= 1 ? "calc(100vh - 3rem) * " + ratio : undefined,
-        height: ratio < 1 ? "calc(100vw - 3rem) / " + (1 / ratio) : undefined,
+        width: ratio >= 1 ? "calc(100vh - 3rem)" : undefined,
+        height: ratio < 1 ? "calc(100vw - 3rem)" : undefined,
       }
-    : { width: "min(100%, 100vw - 3rem)", height: "min(100%, 100vh - 3rem)" };
+    : { width: "min(100%, calc(100vw - 3rem))", height: "min(100%, calc(100vh - 3rem))" };
 
   return (
     <div className="absolute inset-0 grid place-items-center p-4 md:p-6">
