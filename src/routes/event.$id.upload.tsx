@@ -122,7 +122,7 @@ function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen paper-noise pb-12">
+    <EventThemeScene theme={theme} className="min-h-screen relative pb-12">
       <Toaster richColors position="top-center" />
       <header className="px-5 py-8 max-w-md mx-auto text-center flex flex-col items-center">
         <div className="story-ring-square mb-3">
