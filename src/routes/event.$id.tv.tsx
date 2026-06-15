@@ -36,6 +36,8 @@ function TVPage() {
   const [slideB, setSlideB] = useState<Slide | null>(null);
   const [showA, setShowA] = useState(true);
   const idxRef = useRef({ photoIdx: 0, blockCount: 0, sponsorIdx: 0 });
+  const freshQueueRef = useRef<Photo[]>([]);
+  const seenIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -49,7 +51,9 @@ function TVPage() {
       if (ev) { setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default"); }
       const { data: ph } = await supabase
         .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
-      photosRef.current = (ph ?? []) as Photo[];
+      const initial = (ph ?? []) as Photo[];
+      photosRef.current = initial;
+      seenIdsRef.current = new Set(initial.map(p => p.id));
       const { data: sp } = await supabase
         .from("sponsors").select("*").eq("event_id", id).order("position");
       sponsorsRef.current = (sp ?? []) as Sponsor[];
@@ -62,7 +66,13 @@ function TVPage() {
       .on("postgres_changes",
         { event: "INSERT", schema: "public", table: "photos", filter: `event_id=eq.${id}` },
         (payload) => {
-          photosRef.current = [payload.new as Photo, ...photosRef.current];
+          const newPhoto = payload.new as Photo;
+          if (seenIdsRef.current.has(newPhoto.id)) return;
+          seenIdsRef.current.add(newPhoto.id);
+          // Append to end so the current playback index stays valid (no restart).
+          photosRef.current = [...photosRef.current, newPhoto];
+          // Queue it to be shown ASAP without aborting the current slide.
+          freshQueueRef.current.push(newPhoto);
           force(x => x + 1);
         })
       .on("postgres_changes",
@@ -86,6 +96,13 @@ function TVPage() {
       const photos = photosRef.current;
       const sponsors = sponsorsRef.current;
       const state = idxRef.current;
+
+      // Brand-new uploads jump the queue so guests see their photo right away.
+      if (freshQueueRef.current.length > 0) {
+        const ph = freshQueueRef.current.shift()!;
+        state.blockCount += 1;
+        return { slide: { kind: "photo", photo: ph }, ms: PHOTO_MS };
+      }
 
       if (status === "active" && state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
         const sp = sponsors[state.sponsorIdx % sponsors.length];
