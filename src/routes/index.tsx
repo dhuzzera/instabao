@@ -7,10 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Calendar, Camera, Tv, Plus, LogIn } from "lucide-react";
+import { Calendar, Camera, Tv, Plus, LogIn, Trash2 } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
 import { useAuthUser } from "@/lib/use-auth";
 import { SignOutButton } from "@/components/SignOutButton";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type EventRow = {
   id: string;
@@ -68,6 +72,13 @@ function Home() {
     toast.success("Evento criado! 🎉");
     setName(""); setDate("");
     router.navigate({ to: "/event/$id/admin", params: { id: data.id } });
+  }
+
+  async function deleteEvent(id: string) {
+    const { error } = await supabase.rpc("delete_event", { _event_id: id });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Evento excluído");
+    setEvents(prev => prev.filter(e => e.id !== id));
   }
 
   return (
@@ -145,6 +156,29 @@ function Home() {
                       <Button asChild variant="outline" size="sm" className="rounded-full">
                         <Link to="/event/$id/admin" params={{ id: ev.id }}>Gerenciar</Link>
                       </Button>
+                      {user && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="rounded-full text-destructive hover:text-destructive" aria-label="Excluir evento">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir "{ev.name}"?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação não pode ser desfeita. Todas as fotos do evento serão removidas permanentemente.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteEvent(ev.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
                   </div>
                 </Card>
