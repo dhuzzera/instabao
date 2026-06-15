@@ -17,7 +17,7 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { ThemePicker } from "@/components/ThemePicker";
 
 
-type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string };
+type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string; photo_seconds: number; sponsor_seconds: number; photos_per_block: number };
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type Sponsor = { id: string; image_url: string; position: number };
 
@@ -336,6 +336,8 @@ function AdminPage() {
               {sponsors.length === 0 && <p className="col-span-2 text-xs text-muted-foreground text-center py-4">Nenhum logo ainda</p>}
             </div>
           </Card>
+
+          <SlideshowTimingCard ev={ev} onSaved={loadAll} />
 
           <ThemePicker eventId={id} value={ev?.theme} onChanged={loadAll} />
 
