@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Calendar, Camera, Tv, Plus } from "lucide-react";
+import { Calendar, Camera, Tv, Plus, LogIn } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
+import { useAuthUser } from "@/lib/use-auth";
+import { SignOutButton } from "@/components/SignOutButton";
 
 type EventRow = {
   id: string;
@@ -37,6 +39,7 @@ function Home() {
   const [date, setDate] = useState("");
   const [creating, setCreating] = useState(false);
   const router = useRouter();
+  const { user, loading: authLoading } = useAuthUser();
 
   async function load() {
     setLoading(true);
@@ -76,10 +79,19 @@ function Home() {
           <div className="story-ring-square shrink-0">
             <img src={logoAsset.url} alt="Os Bão" className="h-16 w-16 md:h-20 md:w-20 rounded-2xl bg-white block" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-brand-gradient">InstaBão</h1>
             <p className="text-sm text-muted-foreground font-medium">Telão ao vivo · QR Code · sem app, só festa</p>
           </div>
+          {!authLoading && (
+            user ? (
+              <SignOutButton variant="outline" />
+            ) : (
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/auth"><LogIn className="h-4 w-4 mr-2" />Entrar</Link>
+              </Button>
+            )
+          )}
         </div>
       </header>
 
@@ -147,25 +159,33 @@ function Home() {
               <Plus className="h-6 w-6 text-white" strokeWidth={3} />
             </div>
             <h2 className="text-2xl font-extrabold text-foreground tracking-tight">Novo evento</h2>
-            <p className="text-sm text-muted-foreground mt-1 mb-6">Crie um álbum digital e receba fotos via QR Code.</p>
-            <form onSubmit={createEvent} className="space-y-5">
-              <div>
-                <Label htmlFor="name" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Nome do evento</Label>
-                <Input id="name" value={name} onChange={e => setName(e.target.value)}
-                  placeholder="Festa Os Bão 2026" required
-                  className="mt-2 rounded-xl bg-muted/60 border-border focus-visible:ring-pink-500/30" />
-              </div>
-              <div>
-                <Label htmlFor="date" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Data</Label>
-                <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)}
-                  className="mt-2 rounded-xl bg-muted/60 border-border" />
-              </div>
-              <Button type="submit"
-                className="w-full rounded-xl bg-brand-gradient text-white font-bold py-6 shadow-lg shadow-orange-200/80 hover:scale-[1.02] active:scale-[0.98] transition-transform border-0"
-                disabled={creating}>
-                {creating ? "Criando…" : "Criar evento"}
+            <p className="text-sm text-muted-foreground mt-1 mb-6">
+              {user ? "Crie um álbum digital e receba fotos via QR Code." : "Faça login como moderador para criar eventos."}
+            </p>
+            {user ? (
+              <form onSubmit={createEvent} className="space-y-5">
+                <div>
+                  <Label htmlFor="name" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Nome do evento</Label>
+                  <Input id="name" value={name} onChange={e => setName(e.target.value)}
+                    placeholder="Festa Os Bão 2026" required maxLength={120}
+                    className="mt-2 rounded-xl bg-muted/60 border-border focus-visible:ring-pink-500/30" />
+                </div>
+                <div>
+                  <Label htmlFor="date" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Data</Label>
+                  <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)}
+                    className="mt-2 rounded-xl bg-muted/60 border-border" />
+                </div>
+                <Button type="submit"
+                  className="w-full rounded-xl bg-brand-gradient text-white font-bold py-6 shadow-lg shadow-orange-200/80 hover:scale-[1.02] active:scale-[0.98] transition-transform border-0"
+                  disabled={creating}>
+                  {creating ? "Criando…" : "Criar evento"}
+                </Button>
+              </form>
+            ) : (
+              <Button asChild className="w-full rounded-xl bg-brand-gradient text-white font-bold py-6 shadow-lg shadow-orange-200/80 border-0">
+                <Link to="/auth"><LogIn className="h-4 w-4 mr-2" />Entrar como moderador</Link>
               </Button>
-            </form>
+            )}
           </Card>
         </aside>
       </main>
