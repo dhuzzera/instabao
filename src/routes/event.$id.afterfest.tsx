@@ -24,7 +24,53 @@ function AfterFestPage() {
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [downloading, setDownloading] = useState(false);
   const clientId = useMemo(() => getClientId(), []);
+
+  function toggleSelect(photoId: string) {
+    setSelected(prev => {
+      const n = new Set(prev);
+      if (n.has(photoId)) n.delete(photoId); else n.add(photoId);
+      return n;
+    });
+  }
+
+  async function downloadSelected() {
+    const toDownload = photos.filter(p => selected.has(p.id));
+    if (toDownload.length === 0 || downloading) return;
+    setDownloading(true);
+    const tId = toast.loading(`Preparando ${toDownload.length} fotos...`);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      let done = 0;
+      await Promise.all(toDownload.map(async (p, i) => {
+        try {
+          const res = await fetch(p.image_url);
+          const blob = await res.blob();
+          const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+          const namePart = p.guest_name ? p.guest_name.replace(/[^a-z0-9]+/gi, "_").slice(0, 30) : "foto";
+          zip.file(`${String(i + 1).padStart(3, "0")}_${namePart}.${ext}`, blob);
+        } catch {}
+        done++;
+        toast.loading(`Baixando ${done}/${toDownload.length}...`, { id: tId });
+      }));
+      const out = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(out);
+      const a = document.createElement("a");
+      a.href = url; a.download = `fotos-${ev?.name?.replace(/[^a-z0-9]+/gi, "_") ?? "evento"}.zip`; a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Download pronto!", { id: tId });
+      setSelectMode(false);
+      setSelected(new Set());
+    } catch (e: any) {
+      toast.error("Erro ao baixar", { id: tId, description: e?.message });
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   useEffect(() => {
     (async () => {
