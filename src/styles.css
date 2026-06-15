@@ -176,3 +176,47 @@
 
 .tv-fade-enter { opacity: 0; transition: opacity 500ms ease; }
 .tv-fade-enter-active { opacity: 1; }
+
+/* ---------- Event theme particles ---------- */
+@keyframes theme-fall {
+  0%   { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(110vh) translateX(40px) rotate(360deg); opacity: 0.9; }
+}
+.animate-theme-fall { animation: theme-fall linear infinite; }
+
+@keyframes theme-rise {
+  0%   { transform: translateY(110vh) scale(0.8); opacity: 0; }
+  10%  { opacity: 0.9; }
+  90%  { opacity: 0.9; }
+  100% { transform: translateY(-10vh) scale(1.1); opacity: 0; }
+}
+.animate-theme-rise { animation: theme-rise linear infinite; }
+
+@keyframes theme-fly {
+  0%   { transform: translate(-10vw, 20vh) scale(0.8); opacity: 0; }
+  10%  { opacity: 0.85; }
+  100% { transform: translate(110vw, 60vh) scale(1); opacity: 0; }
+}
+.animate-theme-fly { animation: theme-fly linear infinite; }
+
+@keyframes theme-drift {
+  0%   { transform: translateY(-10vh) translateX(0) rotate(-10deg); opacity: 0; }
+  10%  { opacity: 0.95; }
+  100% { transform: translateY(110vh) translateX(-30px) rotate(20deg); opacity: 0.95; }
+}
+.animate-theme-drift { animation: theme-drift linear infinite; }
+
+@keyframes theme-burst {
+  0%   { transform: scale(0.4); opacity: 0; }
+  20%  { transform: scale(1.2); opacity: 1; }
+  60%  { opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.animate-theme-burst { animation: theme-burst ease-out infinite; }
+
+@keyframes theme-twinkle {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50%      { opacity: 0.4; filter: brightness(0.6); }
+}
+.animate-theme-twinkle { animation: theme-twinkle 1.4s ease-in-out infinite; }

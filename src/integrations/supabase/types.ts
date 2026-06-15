@@ -22,6 +22,7 @@ export type Database = {
           id: string
           name: string
           status: string
+          theme: string
         }
         Insert: {
           banner_url?: string | null
@@ -30,6 +31,7 @@ export type Database = {
           id?: string
           name: string
           status?: string
+          theme?: string
         }
         Update: {
           banner_url?: string | null
@@ -38,6 +40,7 @@ export type Database = {
           id?: string
           name?: string
           status?: string
+          theme?: string
         }
         Relationships: []
       }

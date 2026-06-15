@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
+import { EventThemeScene } from "@/components/EventTheme";
 
 
 export const Route = createFileRoute("/event/$id/upload")({
@@ -30,6 +31,7 @@ function UploadPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
   const [eventStatus, setEventStatus] = useState<string>("active");
+  const [theme, setTheme] = useState<string>("default");
   const [guest, setGuest] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -39,8 +41,8 @@ function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase.from("events").select("name,status").eq("id", id).single()
-      .then(({ data }) => { if (data) { setEventName(data.name); setEventStatus(data.status); } });
+    supabase.from("events").select("name,status,theme").eq("id", id).single()
+      .then(({ data }) => { if (data) { setEventName(data.name); setEventStatus(data.status); setTheme(data.theme ?? "default"); } });
   }, [id]);
 
   useEffect(() => {
@@ -92,7 +94,7 @@ function UploadPage() {
 
   if (eventStatus === "finished") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 paper-noise text-center">
+      <EventThemeScene theme={theme} className="min-h-screen relative flex flex-col items-center justify-center px-6 text-center">
         <img src={logoAsset.url} alt="InstaBão" className="h-20 w-20 rounded-2xl mb-4" />
         <h1 className="text-4xl font-display text-foreground">A festa acabou 🎉</h1>
         <p className="mt-2 text-muted-foreground max-w-sm">
@@ -101,13 +103,13 @@ function UploadPage() {
         <Button asChild className="mt-8">
           <Link to="/event/$id/afterfest" params={{ id }}>Ver AfterFest</Link>
         </Button>
-      </div>
+      </EventThemeScene>
     );
   }
 
   if (sent) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 paper-noise text-center">
+      <EventThemeScene theme={theme} className="min-h-screen relative flex flex-col items-center justify-center px-6 text-center">
         <Toaster richColors position="top-center" />
         <div className="grid h-24 w-24 place-items-center rounded-full bg-foreground text-background mb-6 animate-fade-up">
           <CheckCircle2 className="h-12 w-12" />
@@ -115,12 +117,12 @@ function UploadPage() {
         <h1 className="text-4xl font-display text-foreground animate-fade-up">Foi pro telão!</h1>
         <p className="mt-2 text-muted-foreground animate-fade-up">Sua foto está rodando no telão agora.</p>
         <Button className="mt-8" onClick={() => setSent(false)}>Enviar outra foto</Button>
-      </div>
+      </EventThemeScene>
     );
   }
 
   return (
-    <div className="min-h-screen paper-noise pb-12">
+    <EventThemeScene theme={theme} className="min-h-screen relative pb-12">
       <Toaster richColors position="top-center" />
       <header className="px-5 py-8 max-w-md mx-auto text-center flex flex-col items-center">
         <div className="story-ring-square mb-3">
@@ -192,6 +194,6 @@ function UploadPage() {
           </p>
         </form>
       </main>
-    </div>
+    </EventThemeScene>
   );
 }

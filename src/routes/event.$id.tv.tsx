@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeOverlay } from "@/components/EventTheme";
+import { getTheme } from "@/lib/themes";
 
 export const Route = createFileRoute("/event/$id/tv")({
   head: () => ({ meta: [{ title: "Telão · InstaBão" }] }),
@@ -24,6 +26,7 @@ function TVPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
   const [status, setStatus] = useState<string>("active");
+  const [theme, setTheme] = useState<string>("default");
   const [uploadUrl, setUploadUrl] = useState("");
   const photosRef = useRef<Photo[]>([]);
   const sponsorsRef = useRef<Sponsor[]>([]);
@@ -42,8 +45,8 @@ function TVPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: ev } = await supabase.from("events").select("name,status").eq("id", id).single();
-      if (ev) { setEventName(ev.name); setStatus(ev.status); }
+      const { data: ev } = await supabase.from("events").select("name,status,theme").eq("id", id).single();
+      if (ev) { setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default"); }
       const { data: ph } = await supabase
         .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
       photosRef.current = (ph ?? []) as Photo[];
@@ -121,13 +124,22 @@ function TVPage() {
 
   const hasContent = photosRef.current.length > 0 || slideA || slideB;
 
+  const t = getTheme(theme);
+
   return (
-    <div className="fixed inset-0 bg-black text-white overflow-hidden select-none" onClick={goFullscreen}>
+    <div
+      className="fixed inset-0 text-white overflow-hidden select-none"
+      style={{ background: t.backgroundDark }}
+      onClick={goFullscreen}
+    >
       <SlideLayer slide={slideA} visible={showA} />
       <SlideLayer slide={slideB} visible={!showA} />
 
+      {/* Themed particles + top strip overlay (above photos, no clicks) */}
+      <ThemeOverlay theme={theme} />
+
       {!hasContent && (
-        <div className="absolute inset-0 grid place-items-center bg-black text-white text-center px-8">
+        <div className="absolute inset-0 grid place-items-center text-white text-center px-8 z-10">
           <div>
             <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
             <p className="text-2xl md:text-3xl opacity-90 mb-8">Esperando as primeiras fotos…</p>
@@ -142,7 +154,7 @@ function TVPage() {
         </div>
       )}
 
-      <div className="absolute top-0 left-0 right-0 h-6 bunting pointer-events-none" />
+
 
       {eventName && (
         <div className="absolute top-8 left-8 bg-black/40 backdrop-blur px-5 py-2 rounded-full">
