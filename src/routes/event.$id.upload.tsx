@@ -117,17 +117,18 @@ function UploadPage() {
   return (
     <div className="min-h-screen paper-noise pb-12">
       <Toaster richColors position="top-center" />
-      <div className="h-4 bunting" />
-      <header className="px-5 py-6 max-w-md mx-auto text-center flex flex-col items-center">
-        <img src={logoAsset.url} alt="Os Bão" className="h-20 w-20 rounded-2xl mb-2" />
-        <p className="text-xs uppercase tracking-widest text-foreground font-bold">InstaBão</p>
-        <h1 className="text-3xl font-display text-foreground mt-1">{eventName || "Evento"}</h1>
+      <header className="px-5 py-8 max-w-md mx-auto text-center flex flex-col items-center">
+        <div className="story-ring-square mb-3">
+          <img src={logoAsset.url} alt="Os Bão" className="h-20 w-20 rounded-2xl bg-white block" />
+        </div>
+        <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-brand-gradient">InstaBão</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground mt-1.5">{eventName || "Evento"}</h1>
         <p className="text-sm text-muted-foreground mt-1">Mande uma foto pro telão</p>
       </header>
 
       <main className="px-5 max-w-md mx-auto">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Card className="p-4">
+          <Card className="p-4 rounded-3xl border border-border shadow-sm">
             <input
               ref={inputRef} type="file" accept="image/*" capture="environment"
               className="hidden"
@@ -139,25 +140,27 @@ function UploadPage() {
               </div>
             ) : (
               <button type="button" onClick={() => inputRef.current?.click()}
-                className="w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-foreground/40 bg-muted flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform">
-                <Camera className="h-16 w-16 text-foreground" />
-                <span className="font-display text-2xl text-foreground">Tirar foto</span>
+                className="w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-border bg-gradient-to-br from-pink-50/60 via-orange-50/60 to-amber-50/60 flex flex-col items-center justify-center gap-3 active:scale-[0.98] transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-brand-gradient flex items-center justify-center shadow-lg shadow-orange-200">
+                  <Camera className="h-8 w-8 text-white" />
+                </div>
+                <span className="text-2xl font-extrabold tracking-tight text-foreground">Tirar foto</span>
                 <span className="text-xs text-muted-foreground">ou escolher da galeria</span>
               </button>
             )}
             {preview && (
-              <div className="flex gap-2 mt-2">
-                <Button type="button" variant="outline" size="sm" className="flex-1"
+              <div className="flex gap-2 mt-3">
+                <Button type="button" variant="outline" size="sm" className="flex-1 rounded-full"
                   onClick={async () => { if (file) setFile(await rotateImage(file, 270)); }}
                   disabled={sending}>
                   <RotateCcw className="h-4 w-4 mr-1" /> Girar
                 </Button>
-                <Button type="button" variant="outline" size="sm" className="flex-1"
+                <Button type="button" variant="outline" size="sm" className="flex-1 rounded-full"
                   onClick={async () => { if (file) setFile(await rotateImage(file, 90)); }}
                   disabled={sending}>
                   <RotateCw className="h-4 w-4 mr-1" /> Girar
                 </Button>
-                <Button type="button" variant="ghost" size="sm" className="flex-1"
+                <Button type="button" variant="ghost" size="sm" className="flex-1 rounded-full"
                   onClick={() => inputRef.current?.click()} disabled={sending}>
                   Trocar
                 </Button>
@@ -167,11 +170,14 @@ function UploadPage() {
           </Card>
 
           <div>
-            <Label htmlFor="guest">Seu nome (opcional)</Label>
-            <Input id="guest" value={guest} onChange={e => setGuest(e.target.value)} placeholder="Ex: Maria" maxLength={40} />
+            <Label htmlFor="guest" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Seu nome (opcional)</Label>
+            <Input id="guest" value={guest} onChange={e => setGuest(e.target.value)} placeholder="Ex: Maria" maxLength={40}
+              className="mt-2 rounded-xl bg-muted/60 border-border" />
           </div>
 
-          <Button type="submit" size="lg" className="w-full text-lg" disabled={sending || !file}>
+          <Button type="submit" size="lg"
+            className="w-full text-base rounded-xl bg-brand-gradient text-white font-bold py-6 shadow-lg shadow-orange-200/80 hover:scale-[1.01] active:scale-[0.98] transition-transform border-0"
+            disabled={sending || !file}>
             <Upload className="h-5 w-5 mr-2" />
             {sending ? (progress || "Enviando…") : "Enviar pro telão"}
           </Button>
