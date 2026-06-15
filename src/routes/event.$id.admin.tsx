@@ -108,8 +108,8 @@ function AdminPage() {
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
           <div className="min-w-0">
-            <h1 className="text-4xl font-display text-secondary truncate">{ev?.name ?? "…"}</h1>
-            <p className="text-sm text-muted-foreground">{ev?.event_date ?? "sem data"} · status: <b className="text-primary">{ev?.status}</b></p>
+            <h1 className="text-4xl font-display text-foreground truncate">{ev?.name ?? "…"}</h1>
+            <p className="text-sm text-muted-foreground">{ev?.event_date ?? "sem data"} · status: <b className="text-foreground">{ev?.status}</b></p>
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={toggleStatus}>
@@ -126,8 +126,8 @@ function AdminPage() {
 
       <main className="max-w-5xl mx-auto px-6 mt-8 grid gap-6 md:grid-cols-[360px_1fr]">
         <aside className="space-y-6">
-          <Card className="p-5">
-            <h2 className="font-display text-xl text-secondary mb-3">QR Code para convidados</h2>
+          <Card className="p-5 border-2 border-foreground">
+            <h2 className="font-display text-xl text-foreground mb-3">QR Code para convidados</h2>
             <div ref={qrRef} className="bg-white p-4 rounded-2xl grid place-items-center">
               {uploadUrl && <QRCodeCanvas value={uploadUrl} size={220} level="M" includeMargin />}
             </div>
@@ -143,7 +143,7 @@ function AdminPage() {
           </Card>
 
           <Card className="p-5">
-            <h2 className="font-display text-xl text-secondary mb-3">Patrocinadores</h2>
+            <h2 className="font-display text-xl text-foreground mb-3">Patrocinadores</h2>
             <input ref={sponsorInput} type="file" accept="image/*" className="hidden" onChange={addSponsor} />
             <Button onClick={() => sponsorInput.current?.click()} variant="outline" className="w-full">
               <ImageIcon className="h-4 w-4 mr-2" /> Adicionar logo
@@ -164,7 +164,7 @@ function AdminPage() {
         </aside>
 
         <section>
-          <h2 className="font-display text-2xl text-secondary mb-3">Fotos recebidas ({photos.length})</h2>
+          <h2 className="font-display text-2xl text-foreground mb-3">Fotos recebidas ({photos.length})</h2>
           {photos.length === 0 ? (
             <Card className="p-8 text-center border-dashed">
               <p className="text-muted-foreground">Aguardando fotos dos convidados 📸</p>

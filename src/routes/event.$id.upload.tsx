@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Camera, CheckCircle2, Upload } from "lucide-react";
+import logoAsset from "@/assets/logo-osbao.png.asset.json";
 
 export const Route = createFileRoute("/event/$id/upload")({
   head: ({ params }) => ({
@@ -67,10 +68,10 @@ function UploadPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 paper-noise text-center">
         <Toaster richColors position="top-center" />
-        <div className="grid h-24 w-24 place-items-center rounded-full bg-primary text-primary-foreground mb-6 animate-fade-up">
+        <div className="grid h-24 w-24 place-items-center rounded-full bg-foreground text-background mb-6 animate-fade-up">
           <CheckCircle2 className="h-12 w-12" />
         </div>
-        <h1 className="text-4xl font-display text-secondary animate-fade-up">Foi pro telão! 🎉</h1>
+        <h1 className="text-4xl font-display text-foreground animate-fade-up">Foi pro telão!</h1>
         <p className="mt-2 text-muted-foreground animate-fade-up">Sua foto está rodando no telão agora.</p>
         <Button className="mt-8" onClick={() => setSent(false)}>Enviar outra foto</Button>
       </div>
@@ -81,10 +82,11 @@ function UploadPage() {
     <div className="min-h-screen paper-noise pb-12">
       <Toaster richColors position="top-center" />
       <div className="h-4 bunting" />
-      <header className="px-5 py-6 max-w-md mx-auto text-center">
-        <p className="text-xs uppercase tracking-widest text-primary font-bold">InstaBão</p>
-        <h1 className="text-3xl font-display text-secondary mt-1">{eventName || "Evento"}</h1>
-        <p className="text-sm text-muted-foreground mt-1">Mande uma foto pro telão 📸</p>
+      <header className="px-5 py-6 max-w-md mx-auto text-center flex flex-col items-center">
+        <img src={logoAsset.url} alt="Os Bão" className="h-20 w-20 rounded-2xl mb-2" />
+        <p className="text-xs uppercase tracking-widest text-foreground font-bold">InstaBão</p>
+        <h1 className="text-3xl font-display text-foreground mt-1">{eventName || "Evento"}</h1>
+        <p className="text-sm text-muted-foreground mt-1">Mande uma foto pro telão</p>
       </header>
 
       <main className="px-5 max-w-md mx-auto">
@@ -101,9 +103,9 @@ function UploadPage() {
               </div>
             ) : (
               <button type="button" onClick={() => inputRef.current?.click()}
-                className="w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-primary/40 bg-accent/20 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform">
-                <Camera className="h-16 w-16 text-primary" />
-                <span className="font-display text-2xl text-secondary">Tirar foto</span>
+                className="w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-foreground/40 bg-muted flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform">
+                <Camera className="h-16 w-16 text-foreground" />
+                <span className="font-display text-2xl text-foreground">Tirar foto</span>
                 <span className="text-xs text-muted-foreground">ou escolher da galeria</span>
               </button>
             )}
