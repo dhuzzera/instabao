@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { toast } from "sonner";
 import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus, Pencil, LogOut } from "lucide-react";
 import { ModeratorsPanel } from "@/components/ModeratorsPanel";
-import { useRouter } from "@tanstack/react-router";
+import { SignOutButton } from "@/components/SignOutButton";
 
 
 type EventRow = { id: string; name: string; event_date: string | null; status: string };
