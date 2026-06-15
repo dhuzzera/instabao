@@ -4,14 +4,16 @@ import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadEventFile } from "@/lib/upload";
 import { compressImage } from "@/lib/compress";
+import { rotateImage } from "@/lib/rotate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Camera, CheckCircle2, Upload } from "lucide-react";
+import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
+
 
 export const Route = createFileRoute("/event/$id/upload")({
   head: ({ params }) => ({
