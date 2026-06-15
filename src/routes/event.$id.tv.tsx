@@ -87,6 +87,18 @@ function TVPage() {
           sponsorsRef.current = (data ?? []) as Sponsor[];
           force(x => x + 1);
         })
+      .on("postgres_changes",
+        { event: "UPDATE", schema: "public", table: "events", filter: `id=eq.${id}` },
+        (payload) => {
+          const row = payload.new as { status?: string; theme?: string; photo_seconds?: number; sponsor_seconds?: number; photos_per_block?: number };
+          if (row.status) setStatus(row.status);
+          if (row.theme) setTheme(row.theme);
+          timingRef.current = {
+            photoMs: (row.photo_seconds ?? 5) * 1000,
+            sponsorMs: (row.sponsor_seconds ?? 7) * 1000,
+            perBlock: row.photos_per_block ?? 5,
+          };
+        })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [id]);
