@@ -136,6 +136,31 @@ function AdminPage() {
     if (error) toast.error(error.message); else loadAll();
   }
 
+  // Storage estimate (free plan ~1GB, fotos comprimidas ~300KB)
+  const STORAGE_LIMIT_MB = 1024;
+  const AVG_PHOTO_KB = 300;
+  const storage = useMemo(() => {
+    const usedMB = (photos.length * AVG_PHOTO_KB) / 1024;
+    const pct = Math.min(100, (usedMB / STORAGE_LIMIT_MB) * 100);
+    const remainingPhotos = Math.max(0, Math.floor((STORAGE_LIMIT_MB * 1024 - photos.length * AVG_PHOTO_KB) / AVG_PHOTO_KB));
+    let level: "ok" | "warn" | "danger" = "ok";
+    if (pct >= 85) level = "danger";
+    else if (pct >= 65) level = "warn";
+    return { usedMB, pct, remainingPhotos, level };
+  }, [photos.length]);
+
+  const lastAlertRef = useRef<string>("");
+  useEffect(() => {
+    const key = `${id}:${storage.level}`;
+    if (lastAlertRef.current === key) return;
+    lastAlertRef.current = key;
+    if (storage.level === "warn") {
+      toast.warning(`Armazenamento em ${storage.pct.toFixed(0)}% — ~${storage.remainingPhotos} fotos restantes`);
+    } else if (storage.level === "danger") {
+      toast.error(`Armazenamento em ${storage.pct.toFixed(0)}%! Considere finalizar o evento em breve.`);
+    }
+  }, [storage.level, storage.pct, storage.remainingPhotos, id]);
+
   // Stats
   const stats = useMemo(() => {
     if (photos.length === 0) return null;
@@ -145,7 +170,6 @@ function AdminPage() {
     const last = Math.max(...times);
     const spanH = Math.max((last - first) / 3_600_000, 1 / 60);
     const rate = photos.length / spanH;
-    // Peak hour
     const byHour = new Map<number, number>();
     for (const p of photos) {
       const h = new Date(p.created_at).getHours();
@@ -153,7 +177,6 @@ function AdminPage() {
     }
     let peakHour = -1, peakN = 0;
     for (const [h, n] of byHour) if (n > peakN) { peakN = n; peakHour = h; }
-    // Top senders
     const counts = new Map<string, number>();
     for (const p of photos) {
       const k = p.guest_name?.trim() || "Anônimo";
