@@ -146,11 +146,24 @@ function UploadPage() {
               </button>
             )}
             {preview && (
-              <Button type="button" variant="ghost" size="sm" className="w-full mt-2"
-                onClick={() => inputRef.current?.click()}>
-                Trocar foto
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button type="button" variant="outline" size="sm" className="flex-1"
+                  onClick={async () => { if (file) setFile(await rotateImage(file, 270)); }}
+                  disabled={sending}>
+                  <RotateCcw className="h-4 w-4 mr-1" /> Girar
+                </Button>
+                <Button type="button" variant="outline" size="sm" className="flex-1"
+                  onClick={async () => { if (file) setFile(await rotateImage(file, 90)); }}
+                  disabled={sending}>
+                  <RotateCw className="h-4 w-4 mr-1" /> Girar
+                </Button>
+                <Button type="button" variant="ghost" size="sm" className="flex-1"
+                  onClick={() => inputRef.current?.click()} disabled={sending}>
+                  Trocar
+                </Button>
+              </div>
             )}
+
           </Card>
 
           <div>
