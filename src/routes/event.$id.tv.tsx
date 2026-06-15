@@ -151,7 +151,9 @@ function TVPage() {
           <p className="font-display text-2xl">{eventName}</p>
         </div>
       )}
-      <div className="absolute bottom-4 right-6 text-xs opacity-60">InstaBão · ao vivo</div>
+      <div className="absolute bottom-4 right-6 text-xs opacity-60">
+        InstaBão · {status === "finished" ? "memórias" : "ao vivo"}
+      </div>
     </div>
   );
 }
