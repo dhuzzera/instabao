@@ -252,7 +252,11 @@ function AfterFestPage() {
               return (
                 <div
                   key={p.id}
-                  className="group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 border-foreground/10 hover:border-foreground transition"
+                  className={`group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 transition ${
+                    selectMode && selected.has(p.id)
+                      ? "border-foreground ring-4 ring-foreground/30"
+                      : "border-foreground/10 hover:border-foreground"
+                  }`}
                 >
                   <button
                     onClick={() => selectMode ? toggleSelect(p.id) : setLightboxIdx(i)}
