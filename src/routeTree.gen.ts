@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ECodeRouteImport } from './routes/e.$code'
 import { Route as EventIdUploadRouteImport } from './routes/event.$id.upload'
 import { Route as EventIdTvRouteImport } from './routes/event.$id.tv'
 import { Route as EventIdAfterfestRouteImport } from './routes/event.$id.afterfest'
@@ -24,6 +25,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ECodeRoute = ECodeRouteImport.update({
+  id: '/e/$code',
+  path: '/e/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventIdUploadRoute = EventIdUploadRouteImport.update({
@@ -50,6 +56,7 @@ const EventIdAdminRoute = EventIdAdminRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/e/$code': typeof ECodeRoute
   '/event/$id/admin': typeof EventIdAdminRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/e/$code': typeof ECodeRoute
   '/event/$id/admin': typeof EventIdAdminRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/e/$code': typeof ECodeRoute
   '/event/$id/admin': typeof EventIdAdminRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/e/$code'
     | '/event/$id/admin'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/e/$code'
     | '/event/$id/admin'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/e/$code'
     | '/event/$id/admin'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  ECodeRoute: typeof ECodeRoute
   EventIdAdminRoute: typeof EventIdAdminRoute
   EventIdAfterfestRoute: typeof EventIdAfterfestRoute
   EventIdTvRoute: typeof EventIdTvRoute
@@ -122,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/e/$code': {
+      id: '/e/$code'
+      path: '/e/$code'
+      fullPath: '/e/$code'
+      preLoaderRoute: typeof ECodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/event/$id/upload': {
@@ -158,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  ECodeRoute: ECodeRoute,
   EventIdAdminRoute: EventIdAdminRoute,
   EventIdAfterfestRoute: EventIdAfterfestRoute,
   EventIdTvRoute: EventIdTvRoute,
