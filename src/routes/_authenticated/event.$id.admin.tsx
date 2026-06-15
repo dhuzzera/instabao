@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus, Pencil, LogOut } from "lucide-react";
+import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus, Pencil } from "lucide-react";
 import { ModeratorsPanel } from "@/components/ModeratorsPanel";
 import { SignOutButton } from "@/components/SignOutButton";
 
