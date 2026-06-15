@@ -397,9 +397,9 @@ function AfterFestPage() {
                 <Share2 className="h-4 w-4" /> Compartilhar
               </button>
             </div>
-            {photos.length > 1 && lightboxIdx !== null && (
+            {filteredPhotos.length > 1 && lightboxIdx !== null && (
               <p className="text-center text-white/40 text-xs mt-3">
-                {lightboxIdx + 1} / {photos.length}
+                {lightboxIdx + 1} / {filteredPhotos.length}
               </p>
             )}
           </div>
