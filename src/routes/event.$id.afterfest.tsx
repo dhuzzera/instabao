@@ -227,7 +227,7 @@ function AfterFestPage() {
                     Cancelar
                   </button>
                   <button
-                    onClick={() => setSelected(new Set(photos.map(p => p.id)))}
+                    onClick={() => setSelected(new Set(filteredPhotos.map(p => p.id)))}
                     className="text-sm px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-foreground"
                   >
                     Todas
