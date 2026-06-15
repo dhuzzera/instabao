@@ -4,10 +4,14 @@ import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadEventFile } from "@/lib/upload";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus } from "lucide-react";
+import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus, Pencil } from "lucide-react";
+
 
 type EventRow = { id: string; name: string; event_date: string | null; status: string };
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
@@ -151,6 +155,7 @@ function AdminPage() {
             <p className="text-sm text-muted-foreground">{ev?.event_date ?? "sem data"} · status: <b className="text-foreground">{ev?.status}</b></p>
           </div>
           <div className="flex gap-2 flex-wrap">
+            <EditEventDialog ev={ev} onSaved={loadAll} />
             <Button variant="outline" onClick={toggleStatus}>
               {ev?.status === "active" ? "Finalizar evento" : "Reativar"}
             </Button>
@@ -167,6 +172,7 @@ function AdminPage() {
           </div>
         </div>
       </header>
+
 
       <main className="max-w-5xl mx-auto px-6 mt-8 grid gap-6 md:grid-cols-[360px_1fr]">
         <aside className="space-y-6">
@@ -285,3 +291,63 @@ function AdminPage() {
     </div>
   );
 }
+
+function EditEventDialog({ ev, onSaved }: { ev: EventRow | null; onSaved: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [date, setDate] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open && ev) {
+      setName(ev.name);
+      setDate(ev.event_date ?? "");
+    }
+  }, [open, ev]);
+
+  async function save() {
+    if (!ev || !name.trim()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("events")
+      .update({ name: name.trim(), event_date: date || null })
+      .eq("id", ev.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Evento atualizado");
+    setOpen(false);
+    onSaved();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" disabled={!ev}>
+          <Pencil className="h-4 w-4 mr-2" /> Editar
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar evento</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="ev-name">Nome</Label>
+            <Input id="ev-name" value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="ev-date">Data</Label>
+            <Input id="ev-date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={save} disabled={saving || !name.trim()}>
+            {saving ? "Salvando…" : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+

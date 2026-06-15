@@ -41,6 +41,35 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_likes: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          photo_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          photo_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          photo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_likes_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photos: {
         Row: {
           created_at: string

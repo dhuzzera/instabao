@@ -4,14 +4,16 @@ import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadEventFile } from "@/lib/upload";
 import { compressImage } from "@/lib/compress";
+import { rotateImage } from "@/lib/rotate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Camera, CheckCircle2, Upload } from "lucide-react";
+import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
+
 
 export const Route = createFileRoute("/event/$id/upload")({
   head: ({ params }) => ({
@@ -144,11 +146,24 @@ function UploadPage() {
               </button>
             )}
             {preview && (
-              <Button type="button" variant="ghost" size="sm" className="w-full mt-2"
-                onClick={() => inputRef.current?.click()}>
-                Trocar foto
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button type="button" variant="outline" size="sm" className="flex-1"
+                  onClick={async () => { if (file) setFile(await rotateImage(file, 270)); }}
+                  disabled={sending}>
+                  <RotateCcw className="h-4 w-4 mr-1" /> Girar
+                </Button>
+                <Button type="button" variant="outline" size="sm" className="flex-1"
+                  onClick={async () => { if (file) setFile(await rotateImage(file, 90)); }}
+                  disabled={sending}>
+                  <RotateCw className="h-4 w-4 mr-1" /> Girar
+                </Button>
+                <Button type="button" variant="ghost" size="sm" className="flex-1"
+                  onClick={() => inputRef.current?.click()} disabled={sending}>
+                  Trocar
+                </Button>
+              </div>
             )}
+
           </Card>
 
           <div>
