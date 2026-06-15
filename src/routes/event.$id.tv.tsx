@@ -17,6 +17,7 @@ const PHOTOS_PER_BLOCK = 5;
 function TVPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
+  const [status, setStatus] = useState<string>("active");
   const photosRef = useRef<Photo[]>([]);
   const sponsorsRef = useRef<Sponsor[]>([]);
   const [, force] = useState(0);
@@ -26,10 +27,10 @@ function TVPage() {
   // Fetch initial data
   useEffect(() => {
     (async () => {
-      const { data: ev } = await supabase.from("events").select("name").eq("id", id).single();
-      if (ev) setEventName(ev.name);
+      const { data: ev } = await supabase.from("events").select("name,status").eq("id", id).single();
+      if (ev) { setEventName(ev.name); setStatus(ev.status); }
       const { data: ph } = await supabase
-        .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(200);
+        .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
       photosRef.current = (ph ?? []) as Photo[];
       const { data: sp } = await supabase
         .from("sponsors").select("*").eq("event_id", id).order("position");
