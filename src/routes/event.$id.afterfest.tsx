@@ -370,6 +370,7 @@ function AfterFestPage() {
             {lightbox.guest_name && (
               <p className="text-center text-white font-display text-3xl mt-4">{lightbox.guest_name}</p>
             )}
+            <p className="text-center text-white/50 text-xs mt-1">{formatDateTime(lightbox.created_at)}</p>
             <div className="flex justify-center gap-3 mt-4 flex-wrap">
               <button
                 onClick={() => toggleLike(lightbox.id)}
