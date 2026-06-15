@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/event/$id/tv")({
-  head: () => ({ meta: [{ title: "Telão · Festas Os Bão" }] }),
+  head: () => ({ meta: [{ title: "Telão · InstaBão" }] }),
   component: TVPage,
 });
 
@@ -133,7 +133,7 @@ function TVPage() {
         {!current && (
           <div className="w-full h-full grid place-items-center bg-gradient-to-br from-secondary to-primary text-center px-8">
             <div>
-              <p className="font-display text-6xl md:text-8xl mb-4">Festas Os Bão</p>
+              <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
               <p className="text-2xl md:text-3xl opacity-90">Esperando as primeiras fotos… 📸</p>
             </div>
           </div>
@@ -149,7 +149,7 @@ function TVPage() {
           <p className="font-display text-2xl">{eventName}</p>
         </div>
       )}
-      <div className="absolute bottom-4 right-6 text-xs opacity-60">Festas Os Bão · ao vivo</div>
+      <div className="absolute bottom-4 right-6 text-xs opacity-60">InstaBão · ao vivo</div>
     </div>
   );
 }

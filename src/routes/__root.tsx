@@ -77,9 +77,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Festas Os Bão — Telão de fotos ao vivo" },
+      { title: "InstaBão — Telão de fotos ao vivo" },
       { name: "description", content: "Receba fotos dos convidados via QR Code e exiba no telão em tempo real." },
-      { property: "og:title", content: "Festas Os Bão" },
+      { property: "og:title", content: "InstaBão" },
       { property: "og:description", content: "Telão de fotos ao vivo para festas e eventos." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

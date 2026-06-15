@@ -13,7 +13,7 @@ import { Camera, CheckCircle2, Upload } from "lucide-react";
 export const Route = createFileRoute("/event/$id/upload")({
   head: ({ params }) => ({
     meta: [
-      { title: "Enviar foto · Festas Os Bão" },
+      { title: "Enviar foto · InstaBão" },
       { name: "description", content: `Envie sua foto para o telão do evento ${params.id}.` },
     ],
   }),
@@ -82,7 +82,7 @@ function UploadPage() {
       <Toaster richColors position="top-center" />
       <div className="h-4 bunting" />
       <header className="px-5 py-6 max-w-md mx-auto text-center">
-        <p className="text-xs uppercase tracking-widest text-primary font-bold">Festas Os Bão</p>
+        <p className="text-xs uppercase tracking-widest text-primary font-bold">InstaBão</p>
         <h1 className="text-3xl font-display text-secondary mt-1">{eventName || "Evento"}</h1>
         <p className="text-sm text-muted-foreground mt-1">Mande uma foto pro telão 📸</p>
       </header>

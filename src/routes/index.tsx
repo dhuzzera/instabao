@@ -20,9 +20,9 @@ type EventRow = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Festas Os Bão — Telão de fotos ao vivo" },
+      { title: "InstaBão — Telão de fotos ao vivo" },
       { name: "description", content: "Crie eventos, receba fotos dos convidados via QR Code e exiba no telão em tempo real." },
-      { property: "og:title", content: "Festas Os Bão" },
+      { property: "og:title", content: "InstaBão" },
       { property: "og:description", content: "Telão de fotos ao vivo para festas e eventos." },
     ],
   }),
@@ -77,7 +77,7 @@ function Home() {
             <Sparkles className="h-6 w-6" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-4xl md:text-5xl font-display text-secondary">Festas Os Bão</h1>
+            <h1 className="text-4xl md:text-5xl font-display text-secondary">InstaBão</h1>
             <p className="text-sm text-muted-foreground">Telão ao vivo · QR Code · sem app, só festa 🔥</p>
           </div>
         </div>

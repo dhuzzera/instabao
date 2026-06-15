@@ -14,7 +14,7 @@ type Photo = { id: string; image_url: string; guest_name: string | null; created
 type Sponsor = { id: string; image_url: string; position: number };
 
 export const Route = createFileRoute("/event/$id/admin")({
-  head: () => ({ meta: [{ title: "Gerenciar · Festas Os Bão" }] }),
+  head: () => ({ meta: [{ title: "Gerenciar · InstaBão" }] }),
   component: AdminPage,
 });
 
