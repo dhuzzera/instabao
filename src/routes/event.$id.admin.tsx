@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadEventFile } from "@/lib/upload";
+import { getClientId } from "@/lib/client-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
