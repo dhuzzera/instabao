@@ -275,6 +275,6 @@ function AfterFestPage() {
           </div>
         </div>
       )}
-    </div>
+    </EventThemeScene>
   );
 }
