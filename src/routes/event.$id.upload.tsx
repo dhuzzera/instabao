@@ -109,7 +109,7 @@ function UploadPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 paper-noise text-center">
+      <EventThemeScene theme={theme} className="min-h-screen relative flex flex-col items-center justify-center px-6 text-center">
         <Toaster richColors position="top-center" />
         <div className="grid h-24 w-24 place-items-center rounded-full bg-foreground text-background mb-6 animate-fade-up">
           <CheckCircle2 className="h-12 w-12" />
@@ -117,7 +117,7 @@ function UploadPage() {
         <h1 className="text-4xl font-display text-foreground animate-fade-up">Foi pro telão!</h1>
         <p className="mt-2 text-muted-foreground animate-fade-up">Sua foto está rodando no telão agora.</p>
         <Button className="mt-8" onClick={() => setSent(false)}>Enviar outra foto</Button>
-      </div>
+      </EventThemeScene>
     );
   }
 
