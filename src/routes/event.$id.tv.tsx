@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
-import { EventThemeScene } from "@/components/EventTheme";
+import { ThemeOverlay } from "@/components/EventTheme";
+import { getTheme } from "@/lib/themes";
 
 export const Route = createFileRoute("/event/$id/tv")({
   head: () => ({ meta: [{ title: "Telão · InstaBão" }] }),
@@ -123,37 +124,36 @@ function TVPage() {
 
   const hasContent = photosRef.current.length > 0 || slideA || slideB;
 
+  const t = getTheme(theme);
+
   return (
-    <div className="fixed inset-0 bg-black text-white overflow-hidden select-none" onClick={goFullscreen}>
+    <div
+      className="fixed inset-0 text-white overflow-hidden select-none"
+      style={{ background: t.backgroundDark }}
+      onClick={goFullscreen}
+    >
       <SlideLayer slide={slideA} visible={showA} />
       <SlideLayer slide={slideB} visible={!showA} />
 
       {/* Themed particles + top strip overlay (above photos, no clicks) */}
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        <EventThemeScene theme={theme} dark className="absolute inset-0 bg-transparent" >
-          <div />
-        </EventThemeScene>
-      </div>
+      <ThemeOverlay theme={theme} />
 
       {!hasContent && (
         <div className="absolute inset-0 grid place-items-center text-white text-center px-8 z-10">
-          <EventThemeScene theme={theme} dark className="absolute inset-0">
-            <div className="absolute inset-0 grid place-items-center">
-              <div>
-                <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
-                <p className="text-2xl md:text-3xl opacity-90 mb-8">Esperando as primeiras fotos…</p>
-                {uploadUrl && (
-                  <div className="inline-flex flex-col items-center gap-3 bg-white text-black p-6 rounded-3xl">
-                    <QRCodeCanvas value={uploadUrl} size={220} level="M" includeMargin />
-                    <p className="font-display text-2xl">Aponte a câmera</p>
-                    <p className="text-xs uppercase tracking-widest opacity-70">manda sua foto</p>
-                  </div>
-                )}
+          <div>
+            <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
+            <p className="text-2xl md:text-3xl opacity-90 mb-8">Esperando as primeiras fotos…</p>
+            {uploadUrl && (
+              <div className="inline-flex flex-col items-center gap-3 bg-white text-black p-6 rounded-3xl">
+                <QRCodeCanvas value={uploadUrl} size={220} level="M" includeMargin />
+                <p className="font-display text-2xl">Aponte a câmera</p>
+                <p className="text-xs uppercase tracking-widest opacity-70">manda sua foto</p>
               </div>
-            </div>
-          </EventThemeScene>
+            )}
+          </div>
         </div>
       )}
+
 
 
       {eventName && (
