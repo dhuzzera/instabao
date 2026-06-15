@@ -255,9 +255,9 @@ function AfterFestPage() {
                   className="group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 border-foreground/10 hover:border-foreground transition"
                 >
                   <button
-                    onClick={() => setLightboxIdx(i)}
+                    onClick={() => selectMode ? toggleSelect(p.id) : setLightboxIdx(i)}
                     className="absolute inset-0 w-full h-full"
-                    aria-label="Abrir foto"
+                    aria-label={selectMode ? "Selecionar foto" : "Abrir foto"}
                   >
                     <img
                       src={p.image_url}
