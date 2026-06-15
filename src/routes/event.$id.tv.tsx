@@ -128,23 +128,33 @@ function TVPage() {
       <SlideLayer slide={slideA} visible={showA} />
       <SlideLayer slide={slideB} visible={!showA} />
 
+      {/* Themed particles + top strip overlay (above photos, no clicks) */}
+      <div className="absolute inset-0 z-20 pointer-events-none">
+        <EventThemeScene theme={theme} dark className="absolute inset-0 bg-transparent" >
+          <div />
+        </EventThemeScene>
+      </div>
+
       {!hasContent && (
-        <div className="absolute inset-0 grid place-items-center bg-black text-white text-center px-8">
-          <div>
-            <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
-            <p className="text-2xl md:text-3xl opacity-90 mb-8">Esperando as primeiras fotos…</p>
-            {uploadUrl && (
-              <div className="inline-flex flex-col items-center gap-3 bg-white text-black p-6 rounded-3xl">
-                <QRCodeCanvas value={uploadUrl} size={220} level="M" includeMargin />
-                <p className="font-display text-2xl">Aponte a câmera</p>
-                <p className="text-xs uppercase tracking-widest opacity-70">manda sua foto</p>
+        <div className="absolute inset-0 grid place-items-center text-white text-center px-8 z-10">
+          <EventThemeScene theme={theme} dark className="absolute inset-0">
+            <div className="absolute inset-0 grid place-items-center">
+              <div>
+                <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
+                <p className="text-2xl md:text-3xl opacity-90 mb-8">Esperando as primeiras fotos…</p>
+                {uploadUrl && (
+                  <div className="inline-flex flex-col items-center gap-3 bg-white text-black p-6 rounded-3xl">
+                    <QRCodeCanvas value={uploadUrl} size={220} level="M" includeMargin />
+                    <p className="font-display text-2xl">Aponte a câmera</p>
+                    <p className="text-xs uppercase tracking-widest opacity-70">manda sua foto</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          </EventThemeScene>
         </div>
       )}
 
-      <div className="absolute top-0 left-0 right-0 h-6 bunting pointer-events-none" />
 
       {eventName && (
         <div className="absolute top-8 left-8 bg-black/40 backdrop-blur px-5 py-2 rounded-full">
