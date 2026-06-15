@@ -216,7 +216,7 @@ function TVPage() {
   );
 }
 
-function SlideLayer({ slide, visible }: { slide: Slide | null; visible: boolean }) {
+function SlideLayer({ slide, visible, theme }: { slide: Slide | null; visible: boolean; theme?: string }) {
   return (
     <div
       className="absolute inset-0"
@@ -226,18 +226,18 @@ function SlideLayer({ slide, visible }: { slide: Slide | null; visible: boolean 
       }}
     >
       {slide?.kind === "photo" && (
-        <>
+        <PhotoFrame theme={theme}>
           <img src={slide.photo.image_url} alt=""
             className="w-full h-full object-contain bg-black" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/30" />
           {slide.photo.guest_name && (
-            <div className="absolute bottom-16 left-0 right-0 text-center px-12">
+            <div className="absolute bottom-8 left-0 right-0 text-center px-12">
               <p className="font-display text-5xl md:text-7xl drop-shadow-2xl text-white">
                 {slide.photo.guest_name}
               </p>
             </div>
           )}
-        </>
+        </PhotoFrame>
       )}
       {slide?.kind === "sponsor" && (
         <div className="w-full h-full grid place-items-center bg-white text-black p-16 relative">
