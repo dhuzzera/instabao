@@ -83,8 +83,7 @@ function AfterFestPage() {
     setLikeCounts(prev => ({ ...prev, [photoId]: Math.max(0, (prev[photoId] ?? 0) + (liked ? -1 : 1)) }));
     try {
       if (liked) {
-        await supabase.from("photo_likes").delete()
-          .eq("photo_id", photoId).eq("client_id", clientId);
+        await supabase.rpc("delete_my_like", { _photo_id: photoId, _client_id: clientId });
       } else {
         await supabase.from("photo_likes").insert({ photo_id: photoId, client_id: clientId });
       }
