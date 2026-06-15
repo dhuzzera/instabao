@@ -74,6 +74,13 @@ function Home() {
     router.navigate({ to: "/event/$id/admin", params: { id: data.id } });
   }
 
+  async function deleteEvent(id: string) {
+    const { error } = await supabase.rpc("delete_event", { _event_id: id });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Evento excluído");
+    setEvents(prev => prev.filter(e => e.id !== id));
+  }
+
   return (
     <div className="min-h-screen paper-noise">
       <Toaster richColors position="top-center" />
