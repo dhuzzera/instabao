@@ -66,13 +66,12 @@ export function AfterFestPage({ eventId: id }: { eventId: string }) {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       let done = 0;
+      const { watermarkFromUrl } = await import("@/lib/watermark");
       await Promise.all(toDownload.map(async (p, i) => {
         try {
-          const res = await fetch(p.image_url);
-          const blob = await res.blob();
-          const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+          const blob = await watermarkFromUrl(p.image_url, { eventName: ev?.name });
           const namePart = p.guest_name ? p.guest_name.replace(/[^a-z0-9]+/gi, "_").slice(0, 30) : "foto";
-          zip.file(`${String(i + 1).padStart(3, "0")}_${namePart}.${ext}`, blob);
+          zip.file(`${String(i + 1).padStart(3, "0")}_${namePart}.jpg`, blob);
         } catch {}
         done++;
         toast.loading(`Baixando ${done}/${toDownload.length}...`, { id: tId });
@@ -386,15 +385,26 @@ export function AfterFestPage({ eventId: id }: { eventId: string }) {
                 <Heart className={`h-4 w-4 ${myLikes.has(lightbox.id) ? "fill-current" : ""}`} />
                 {likeCounts[lightbox.id] ?? 0}
               </button>
-              <a
-                href={lightbox.image_url}
-                download
-                target="_blank"
-                rel="noreferrer"
+              <button
+                onClick={async () => {
+                  const tId = toast.loading("Preparando foto...");
+                  try {
+                    const { watermarkFromUrl } = await import("@/lib/watermark");
+                    const blob = await watermarkFromUrl(lightbox.image_url, { eventName: ev?.name });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    const namePart = lightbox.guest_name ? lightbox.guest_name.replace(/[^a-z0-9]+/gi, "_").slice(0, 30) : "foto";
+                    a.href = url; a.download = `${namePart}.jpg`; a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("Baixado!", { id: tId });
+                  } catch (e: any) {
+                    toast.error("Erro ao baixar", { id: tId, description: e?.message });
+                  }
+                }}
                 className="inline-flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full font-medium hover:bg-white/90"
               >
                 <Download className="h-4 w-4" /> Baixar
-              </a>
+              </button>
               <button
                 onClick={() => share(lightbox)}
                 className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-full hover:bg-white/20"
