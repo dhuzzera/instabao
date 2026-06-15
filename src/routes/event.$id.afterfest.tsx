@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClientId } from "@/lib/client-id";
-import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X, Heart } from "lucide-react";
+import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X, Heart, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
@@ -24,7 +24,53 @@ function AfterFestPage() {
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [downloading, setDownloading] = useState(false);
   const clientId = useMemo(() => getClientId(), []);
+
+  function toggleSelect(photoId: string) {
+    setSelected(prev => {
+      const n = new Set(prev);
+      if (n.has(photoId)) n.delete(photoId); else n.add(photoId);
+      return n;
+    });
+  }
+
+  async function downloadSelected() {
+    const toDownload = photos.filter(p => selected.has(p.id));
+    if (toDownload.length === 0 || downloading) return;
+    setDownloading(true);
+    const tId = toast.loading(`Preparando ${toDownload.length} fotos...`);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      let done = 0;
+      await Promise.all(toDownload.map(async (p, i) => {
+        try {
+          const res = await fetch(p.image_url);
+          const blob = await res.blob();
+          const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+          const namePart = p.guest_name ? p.guest_name.replace(/[^a-z0-9]+/gi, "_").slice(0, 30) : "foto";
+          zip.file(`${String(i + 1).padStart(3, "0")}_${namePart}.${ext}`, blob);
+        } catch {}
+        done++;
+        toast.loading(`Baixando ${done}/${toDownload.length}...`, { id: tId });
+      }));
+      const out = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(out);
+      const a = document.createElement("a");
+      a.href = url; a.download = `fotos-${ev?.name?.replace(/[^a-z0-9]+/gi, "_") ?? "evento"}.zip`; a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Download pronto!", { id: tId });
+      setSelectMode(false);
+      setSelected(new Set());
+    } catch (e: any) {
+      toast.error("Erro ao baixar", { id: tId, description: e?.message });
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -151,9 +197,46 @@ function AfterFestPage() {
             {ev?.event_date && <p className="text-sm text-muted-foreground">{ev.event_date}</p>}
           </div>
         </div>
-        <p className="mt-6 text-muted-foreground max-w-2xl">
-          {photos.length} {photos.length === 1 ? "memória" : "memórias"} da galera. Curta, baixe e compartilhe.
-        </p>
+        <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-muted-foreground">
+            {photos.length} {photos.length === 1 ? "memória" : "memórias"} da galera. Curta, baixe e compartilhe.
+          </p>
+          {photos.length > 0 && (
+            <div className="flex items-center gap-2">
+              {selectMode ? (
+                <>
+                  <button
+                    onClick={() => { setSelectMode(false); setSelected(new Set()); }}
+                    className="text-sm px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-foreground"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => setSelected(new Set(photos.map(p => p.id)))}
+                    className="text-sm px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-foreground"
+                  >
+                    Todas
+                  </button>
+                  <button
+                    onClick={downloadSelected}
+                    disabled={selected.size === 0 || downloading}
+                    className="text-sm inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-foreground text-background font-semibold disabled:opacity-50"
+                  >
+                    <Download className="h-4 w-4" />
+                    {downloading ? "Baixando..." : `Baixar ${selected.size > 0 ? `(${selected.size})` : ""}`}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setSelectMode(true)}
+                  className="text-sm inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-foreground"
+                >
+                  <Download className="h-4 w-4" /> Selecionar para baixar
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 mt-10">
@@ -169,12 +252,16 @@ function AfterFestPage() {
               return (
                 <div
                   key={p.id}
-                  className="group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 border-foreground/10 hover:border-foreground transition"
+                  className={`group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 transition ${
+                    selectMode && selected.has(p.id)
+                      ? "border-foreground ring-4 ring-foreground/30"
+                      : "border-foreground/10 hover:border-foreground"
+                  }`}
                 >
                   <button
-                    onClick={() => setLightboxIdx(i)}
+                    onClick={() => selectMode ? toggleSelect(p.id) : setLightboxIdx(i)}
                     className="absolute inset-0 w-full h-full"
-                    aria-label="Abrir foto"
+                    aria-label={selectMode ? "Selecionar foto" : "Abrir foto"}
                   >
                     <img
                       src={p.image_url}
@@ -199,6 +286,15 @@ function AfterFestPage() {
                     <Heart className={`h-3.5 w-3.5 ${liked ? "fill-current" : ""}`} />
                     {count > 0 && <span>{count}</span>}
                   </button>
+                  {selectMode && (
+                    <div className="pointer-events-none absolute top-2 left-2">
+                      {selected.has(p.id) ? (
+                        <CheckCircle2 className="h-7 w-7 text-foreground fill-background" />
+                      ) : (
+                        <Circle className="h-7 w-7 text-white drop-shadow" />
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
