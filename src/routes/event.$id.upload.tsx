@@ -65,6 +65,21 @@ function UploadPage() {
     }
   }
 
+  if (eventStatus === "finished") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 paper-noise text-center">
+        <img src={logoAsset.url} alt="InstaBão" className="h-20 w-20 rounded-2xl mb-4" />
+        <h1 className="text-4xl font-display text-foreground">A festa acabou 🎉</h1>
+        <p className="mt-2 text-muted-foreground max-w-sm">
+          Este evento foi finalizado. Mas as memórias ficam — veja todas as fotos no AfterFest.
+        </p>
+        <Button asChild className="mt-8">
+          <Link to="/event/$id/afterfest" params={{ id }}>Ver AfterFest</Link>
+        </Button>
+      </div>
+    );
+  }
+
   if (sent) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 paper-noise text-center">
