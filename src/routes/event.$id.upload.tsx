@@ -130,7 +130,7 @@ function UploadPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Card className="p-4 rounded-3xl border border-border shadow-sm">
             <input
-              ref={inputRef} type="file" accept="image/*" capture="environment"
+              ref={inputRef} type="file" accept="image/*"
               className="hidden"
               onChange={e => setFile(e.target.files?.[0] ?? null)}
             />
