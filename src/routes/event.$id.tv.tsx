@@ -121,20 +121,20 @@ function TVPage() {
         )}
         {current?.kind === "sponsor" && (
           <Slide key={current.sponsor.id}>
-            <div className="w-full h-full grid place-items-center bg-gradient-to-br from-secondary via-secondary to-primary p-16">
+            <div className="w-full h-full grid place-items-center bg-white text-black p-16">
               <img src={current.sponsor.image_url} alt="patrocinador"
-                className="max-w-[80%] max-h-[70%] object-contain drop-shadow-2xl" />
-              <p className="absolute bottom-16 font-display text-3xl md:text-5xl text-accent">
-                Quem faz a festa acontecer 💛
+                className="max-w-[80%] max-h-[70%] object-contain" />
+              <p className="absolute bottom-16 font-display text-3xl md:text-5xl text-black">
+                Quem faz a festa acontecer
               </p>
             </div>
           </Slide>
         )}
         {!current && (
-          <div className="w-full h-full grid place-items-center bg-gradient-to-br from-secondary to-primary text-center px-8">
+          <div className="w-full h-full grid place-items-center bg-black text-white text-center px-8">
             <div>
               <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
-              <p className="text-2xl md:text-3xl opacity-90">Esperando as primeiras fotos… 📸</p>
+              <p className="text-2xl md:text-3xl opacity-90">Esperando as primeiras fotos…</p>
             </div>
           </div>
         )}

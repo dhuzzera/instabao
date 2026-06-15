@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Calendar, Camera, Tv, Plus, Sparkles } from "lucide-react";
+import { Calendar, Camera, Tv, Plus } from "lucide-react";
+import logoAsset from "@/assets/logo-osbao.png.asset.json";
 
 type EventRow = {
   id: string;
@@ -72,37 +73,35 @@ function Home() {
       <div className="h-6 bunting" />
 
       <header className="px-6 pt-10 pb-6 max-w-5xl mx-auto">
-        <div className="flex items-center gap-3">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-            <Sparkles className="h-6 w-6" />
-          </div>
+        <div className="flex items-center gap-4">
+          <img src={logoAsset.url} alt="Os Bão" className="h-16 w-16 md:h-20 md:w-20 rounded-2xl shadow-lg" />
           <div className="min-w-0">
-            <h1 className="text-4xl md:text-5xl font-display text-secondary">InstaBão</h1>
-            <p className="text-sm text-muted-foreground">Telão ao vivo · QR Code · sem app, só festa 🔥</p>
+            <h1 className="text-4xl md:text-5xl font-display text-foreground">InstaBão</h1>
+            <p className="text-sm text-muted-foreground">Telão ao vivo · QR Code · sem app, só festa</p>
           </div>
         </div>
       </header>
 
       <main className="px-6 pb-20 max-w-5xl mx-auto grid gap-8 md:grid-cols-[1fr_360px]">
         <section>
-          <h2 className="text-2xl font-display mb-4 text-secondary">Seus eventos</h2>
+          <h2 className="text-2xl font-display mb-4 text-foreground">Seus eventos</h2>
           {loading ? (
             <p className="text-muted-foreground">Carregando…</p>
           ) : events.length === 0 ? (
             <Card className="p-8 text-center border-dashed">
-              <p className="text-muted-foreground">Nenhum evento ainda. Crie o primeiro arraiá! 🌽</p>
+              <p className="text-muted-foreground">Nenhum evento ainda. Bora criar o primeiro!</p>
             </Card>
           ) : (
             <div className="grid gap-4">
               {events.map(ev => (
-                <Card key={ev.id} className="p-5 hover:shadow-lg transition-shadow">
+                <Card key={ev.id} className="p-5 hover:shadow-lg transition-shadow border-2 border-foreground/10">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="text-xl font-display text-secondary truncate">{ev.name}</h3>
+                      <h3 className="text-xl font-display text-foreground truncate">{ev.name}</h3>
                       <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <Calendar className="h-3.5 w-3.5" />
                         {ev.event_date ?? "sem data"} ·
-                        <span className={ev.status === "active" ? "text-primary font-bold" : ""}>{ev.status}</span>
+                        <span className={ev.status === "active" ? "text-foreground font-bold" : ""}>{ev.status}</span>
                       </p>
                     </div>
                     <div className="flex gap-2 flex-wrap">
@@ -128,8 +127,8 @@ function Home() {
         </section>
 
         <aside>
-          <Card className="p-6 sticky top-6 border-2 border-primary/30">
-            <h2 className="text-xl font-display text-secondary mb-1 flex items-center gap-2">
+          <Card className="p-6 sticky top-6 border-2 border-foreground">
+            <h2 className="text-xl font-display text-foreground mb-1 flex items-center gap-2">
               <Plus className="h-5 w-5" /> Novo evento
             </h2>
             <p className="text-xs text-muted-foreground mb-4">Cada evento gera um álbum e um QR Code próprio.</p>
@@ -137,14 +136,14 @@ function Home() {
               <div>
                 <Label htmlFor="name">Nome</Label>
                 <Input id="name" value={name} onChange={e => setName(e.target.value)}
-                  placeholder="Arraiá 2026" required />
+                  placeholder="Festa Os Bão 2026" required />
               </div>
               <div>
                 <Label htmlFor="date">Data</Label>
                 <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
               </div>
               <Button type="submit" className="w-full" disabled={creating}>
-                {creating ? "Criando…" : "Criar evento 🎉"}
+                {creating ? "Criando…" : "Criar evento"}
               </Button>
             </form>
           </Card>
