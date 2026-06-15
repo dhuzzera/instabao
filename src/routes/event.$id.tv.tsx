@@ -4,6 +4,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeOverlay } from "@/components/EventTheme";
 import { getTheme } from "@/lib/themes";
+import { PhotoFrame } from "@/components/EventTheme";
 
 export const Route = createFileRoute("/event/$id/tv")({
   head: () => ({ meta: [{ title: "Telão · InstaBão" }] }),
