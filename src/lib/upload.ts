@@ -4,11 +4,13 @@ const BUCKET = "event-media";
 // 10 years
 const SIGNED_TTL = 60 * 60 * 24 * 365 * 10;
 
+export type UploadResult = { url: string; path: string };
+
 export async function uploadEventFile(
   eventId: string,
   file: File | Blob,
   kind: "photo" | "sponsor" | "banner",
-): Promise<string> {
+): Promise<UploadResult> {
   const ext = (file instanceof File && file.name.split(".").pop()) || "jpg";
   const path = `${eventId}/${kind}/${crypto.randomUUID()}.${ext}`;
   const { error: upErr } = await supabase.storage
@@ -19,5 +21,5 @@ export async function uploadEventFile(
     .from(BUCKET)
     .createSignedUrl(path, SIGNED_TTL);
   if (error || !data) throw error ?? new Error("Failed to sign URL");
-  return data.signedUrl;
+  return { url: data.signedUrl, path };
 }
