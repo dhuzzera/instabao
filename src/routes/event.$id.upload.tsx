@@ -243,9 +243,6 @@ function UploadPage() {
             {sending ? (progress || "Enviando…") : items.length > 1 ? `Enviar ${items.length} fotos` : "Enviar pro telão"}
           </Button>
 
-          <p className="text-center text-xs text-muted-foreground pt-2">
-            <Link to="/" className="underline">← Voltar</Link>
-          </p>
         </form>
       </main>
     </EventThemeScene>
