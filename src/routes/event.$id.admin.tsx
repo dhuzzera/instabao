@@ -173,7 +173,7 @@ function AdminPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {photos.map(p => (
                 <div key={p.id} className="relative group rounded-xl overflow-hidden aspect-square bg-muted">
-                  <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                  <img src={p.image_url} alt="" className="w-full h-full object-contain" />
                   {p.guest_name && (
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2">
                       {p.guest_name}

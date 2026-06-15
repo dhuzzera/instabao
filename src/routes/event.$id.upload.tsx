@@ -98,8 +98,8 @@ function UploadPage() {
               onChange={e => setFile(e.target.files?.[0] ?? null)}
             />
             {preview ? (
-              <div className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-muted">
-                <img src={preview} alt="prévia" className="w-full h-full object-cover" />
+              <div className="relative rounded-2xl overflow-hidden bg-muted">
+                <img src={preview} alt="prévia" className="w-full h-auto max-h-[70vh] object-contain mx-auto" />
               </div>
             ) : (
               <button type="button" onClick={() => inputRef.current?.click()}
