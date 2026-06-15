@@ -66,7 +66,13 @@ function TVPage() {
       .on("postgres_changes",
         { event: "INSERT", schema: "public", table: "photos", filter: `event_id=eq.${id}` },
         (payload) => {
-          photosRef.current = [payload.new as Photo, ...photosRef.current];
+          const newPhoto = payload.new as Photo;
+          if (seenIdsRef.current.has(newPhoto.id)) return;
+          seenIdsRef.current.add(newPhoto.id);
+          // Append to end so the current playback index stays valid (no restart).
+          photosRef.current = [...photosRef.current, newPhoto];
+          // Queue it to be shown ASAP without aborting the current slide.
+          freshQueueRef.current.push(newPhoto);
           force(x => x + 1);
         })
       .on("postgres_changes",
