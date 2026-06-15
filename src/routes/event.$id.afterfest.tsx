@@ -197,9 +197,46 @@ function AfterFestPage() {
             {ev?.event_date && <p className="text-sm text-muted-foreground">{ev.event_date}</p>}
           </div>
         </div>
-        <p className="mt-6 text-muted-foreground max-w-2xl">
-          {photos.length} {photos.length === 1 ? "memória" : "memórias"} da galera. Curta, baixe e compartilhe.
-        </p>
+        <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-muted-foreground">
+            {photos.length} {photos.length === 1 ? "memória" : "memórias"} da galera. Curta, baixe e compartilhe.
+          </p>
+          {photos.length > 0 && (
+            <div className="flex items-center gap-2">
+              {selectMode ? (
+                <>
+                  <button
+                    onClick={() => { setSelectMode(false); setSelected(new Set()); }}
+                    className="text-sm px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-foreground"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => setSelected(new Set(photos.map(p => p.id)))}
+                    className="text-sm px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-foreground"
+                  >
+                    Todas
+                  </button>
+                  <button
+                    onClick={downloadSelected}
+                    disabled={selected.size === 0 || downloading}
+                    className="text-sm inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-foreground text-background font-semibold disabled:opacity-50"
+                  >
+                    <Download className="h-4 w-4" />
+                    {downloading ? "Baixando..." : `Baixar ${selected.size > 0 ? `(${selected.size})` : ""}`}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setSelectMode(true)}
+                  className="text-sm inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-foreground"
+                >
+                  <Download className="h-4 w-4" /> Selecionar para baixar
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 mt-10">
