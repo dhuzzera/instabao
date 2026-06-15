@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, Image } from "lucide-react";
+import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus } from "lucide-react";
 
 type EventRow = { id: string; name: string; event_date: string | null; status: string };
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
@@ -197,7 +197,7 @@ function AdminPage() {
               <h2 className="font-display text-xl text-foreground mb-3">Estatísticas</h2>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <Image className="h-4 w-4 text-muted-foreground" />
+                  <ImagePlus className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Fotos:</span>
                   <b className="text-foreground ml-auto">{photos.length}</b>
                 </li>
