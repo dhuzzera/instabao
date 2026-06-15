@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ECodeRouteImport } from './routes/e.$code'
+import { Route as ECodeIndexRouteImport } from './routes/e.$code.index'
 import { Route as EventIdUploadRouteImport } from './routes/event.$id.upload'
 import { Route as EventIdTvRouteImport } from './routes/event.$id.tv'
 import { Route as EventIdAfterfestRouteImport } from './routes/event.$id.afterfest'
@@ -33,6 +34,11 @@ const ECodeRoute = ECodeRouteImport.update({
   id: '/e/$code',
   path: '/e/$code',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ECodeIndexRoute = ECodeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ECodeRoute,
 } as any)
 const EventIdUploadRoute = EventIdUploadRouteImport.update({
   id: '/event/$id/upload',
@@ -75,17 +81,18 @@ export interface FileRoutesByFullPath {
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
+  '/e/$code/': typeof ECodeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/e/$code': typeof ECodeRouteWithChildren
   '/e/$code/admin': typeof ECodeAdminRoute
   '/e/$code/tv': typeof ECodeTvRoute
   '/event/$id/admin': typeof EventIdAdminRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
+  '/e/$code': typeof ECodeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +105,7 @@ export interface FileRoutesById {
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
+  '/e/$code/': typeof ECodeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,17 +119,18 @@ export interface FileRouteTypes {
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
+    | '/e/$code/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/e/$code'
     | '/e/$code/admin'
     | '/e/$code/tv'
     | '/event/$id/admin'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
+    | '/e/$code'
   id:
     | '__root__'
     | '/'
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
+    | '/e/$code/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -167,6 +177,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/e/$code'
       preLoaderRoute: typeof ECodeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/e/$code/': {
+      id: '/e/$code/'
+      path: '/'
+      fullPath: '/e/$code/'
+      preLoaderRoute: typeof ECodeIndexRouteImport
+      parentRoute: typeof ECodeRoute
     }
     '/event/$id/upload': {
       id: '/event/$id/upload'
@@ -216,11 +233,13 @@ declare module '@tanstack/react-router' {
 interface ECodeRouteChildren {
   ECodeAdminRoute: typeof ECodeAdminRoute
   ECodeTvRoute: typeof ECodeTvRoute
+  ECodeIndexRoute: typeof ECodeIndexRoute
 }
 
 const ECodeRouteChildren: ECodeRouteChildren = {
   ECodeAdminRoute: ECodeAdminRoute,
   ECodeTvRoute: ECodeTvRoute,
+  ECodeIndexRoute: ECodeIndexRoute,
 }
 
 const ECodeRouteWithChildren = ECodeRoute._addFileChildren(ECodeRouteChildren)
@@ -237,3 +256,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
