@@ -23,7 +23,7 @@ export async function rotateImage(file: File, degrees: 90 | 180 | 270): Promise<
 
 async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
   if ("createImageBitmap" in window) {
-    try { return await createImageBitmap(file); } catch { /* fall through */ }
+    try { return await createImageBitmap(file, { imageOrientation: "from-image" }); } catch { /* fall through */ }
   }
   const url = URL.createObjectURL(file);
   try {
@@ -33,3 +33,4 @@ async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
     return img;
   } finally { URL.revokeObjectURL(url); }
 }
+

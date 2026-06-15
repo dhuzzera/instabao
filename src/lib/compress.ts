@@ -32,7 +32,8 @@ export async function compressImage(file: File): Promise<File> {
 async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
   if ("createImageBitmap" in window) {
     try {
-      return await createImageBitmap(file);
+      // Respect EXIF orientation so portrait phone photos don't render sideways.
+      return await createImageBitmap(file, { imageOrientation: "from-image" });
     } catch {
       /* fall through */
     }
@@ -47,6 +48,7 @@ async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
     URL.revokeObjectURL(url);
   }
 }
+
 
 function fitInside(w: number, h: number, max: number) {
   if (w <= max && h <= max) return { width: w, height: h };
