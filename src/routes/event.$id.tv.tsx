@@ -97,6 +97,13 @@ function TVPage() {
       const sponsors = sponsorsRef.current;
       const state = idxRef.current;
 
+      // Brand-new uploads jump the queue so guests see their photo right away.
+      if (freshQueueRef.current.length > 0) {
+        const ph = freshQueueRef.current.shift()!;
+        state.blockCount += 1;
+        return { slide: { kind: "photo", photo: ph }, ms: PHOTO_MS };
+      }
+
       if (status === "active" && state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
         const sp = sponsors[state.sponsorIdx % sponsors.length];
         state.sponsorIdx = (state.sponsorIdx + 1) % Math.max(sponsors.length, 1);
