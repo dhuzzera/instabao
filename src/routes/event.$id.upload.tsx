@@ -24,15 +24,20 @@ export const Route = createFileRoute("/event/$id/upload")({
       { name: "description", content: `Envie sua foto para o telão do evento ${params.id}.` },
     ],
   }),
-  component: UploadPage,
+  component: UploadRoute,
 });
+
+function UploadRoute() {
+  const { id } = Route.useParams();
+  return <UploadPage eventId={id} />;
+}
 
 const MAX_FILES = 8;
 
 type Item = { id: string; file: File; preview: string };
 
-function UploadPage() {
-  const { id } = Route.useParams();
+export function UploadPage({ eventId: id }: { eventId: string }) {
+
   const [eventName, setEventName] = useState("");
   const [eventStatus, setEventStatus] = useState<string>("active");
   const [theme, setTheme] = useState<string>("default");
