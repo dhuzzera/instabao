@@ -20,7 +20,7 @@ type EventRow = { id: string; name: string; event_date: string | null; status: s
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type Sponsor = { id: string; image_url: string; position: number };
 
-export const Route = createFileRoute("/_authenticated/event/$id/admin")({
+export const Route = createFileRoute("/event/$id/admin")({
   head: () => ({ meta: [{ title: "Gerenciar · InstaBão" }] }),
   component: AdminPage,
 });
