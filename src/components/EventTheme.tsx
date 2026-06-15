@@ -200,23 +200,17 @@ export function PhotoFrame({
   const corners = FRAME_CORNERS[t.key] ?? FRAME_CORNERS.default;
   const [ratio, setRatio] = useState<number | null>(null);
 
+  // Frame fits image naturally: portrait → portrait, landscape → landscape.
+  // Image is never cropped (no object-cover zoom).
+  const frameStyle: React.CSSProperties = ratio
+    ? ratio >= 1
+      ? { width: "min(100%, calc((100vh - 6rem) * " + ratio + "))", aspectRatio: ratio }
+      : { height: "min(100%, calc((100vw - 6rem) / " + (1 / ratio) + "))", aspectRatio: ratio }
+    : { width: "100%", height: "100%" };
+
   return (
     <div className="absolute inset-0 grid place-items-center p-6 md:p-10">
-      <div
-        className="relative max-w-full max-h-full"
-        style={{
-          aspectRatio: ratio ?? undefined,
-          // When ratio known, fit inside available area
-          width: ratio ? "auto" : "100%",
-          height: ratio ? "100%" : "100%",
-          // Force the box to honor both constraints
-          ...(ratio
-            ? ratio >= 1
-              ? { width: "min(100%, calc(100% * 1))", height: "auto", maxHeight: "100%" }
-              : { height: "100%", width: "auto", maxWidth: "100%" }
-            : {}),
-        }}
-      >
+      <div className="relative max-w-full max-h-full" style={frameStyle}>
         <div
           className="relative w-full h-full rounded-3xl overflow-hidden"
           style={{
@@ -235,7 +229,7 @@ export function PhotoFrame({
                   setRatio(img.naturalWidth / img.naturalHeight);
                 }
               }}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/30 pointer-events-none" />
             {caption && (
