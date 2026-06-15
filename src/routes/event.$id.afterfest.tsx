@@ -252,12 +252,28 @@ function AfterFestPage() {
             </div>
           )}
         </div>
+        {photos.length > 0 && (
+          <div className="mt-4 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por nome..."
+              className="w-full sm:max-w-sm pl-9 pr-3 py-2 rounded-full bg-white/10 text-foreground placeholder:text-muted-foreground text-sm border border-white/10 focus:outline-none focus:border-foreground/30"
+            />
+          </div>
+        )}
       </header>
 
       <main className="max-w-6xl mx-auto px-6 mt-10">
         {photos.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
             Nenhuma foto registrada neste evento.
+          </div>
+        ) : filteredPhotos.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            Nenhuma foto encontrada para "{query}".
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
