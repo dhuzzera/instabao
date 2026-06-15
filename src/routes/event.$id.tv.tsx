@@ -100,8 +100,36 @@ function TVPage() {
           };
         })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+
+    // Safety nets in case realtime drops: refetch event settings periodically
+    // and whenever the tab regains focus. Keeps theme/timing/status in sync
+    // even if the websocket is stale.
+    async function refetchEvent() {
+      const { data: ev } = await supabase
+        .from("events")
+        .select("status,theme,photo_seconds,sponsor_seconds,photos_per_block")
+        .eq("id", id)
+        .single();
+      if (!ev) return;
+      setStatus(ev.status);
+      setTheme(ev.theme ?? "default");
+      timingRef.current = {
+        photoMs: (ev.photo_seconds ?? 5) * 1000,
+        sponsorMs: (ev.sponsor_seconds ?? 7) * 1000,
+        perBlock: ev.photos_per_block ?? 5,
+      };
+    }
+    const poll = setInterval(refetchEvent, 20000);
+    const onVis = () => { if (document.visibilityState === "visible") refetchEvent(); };
+    document.addEventListener("visibilitychange", onVis);
+
+    return () => {
+      supabase.removeChannel(ch);
+      clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [id]);
+
 
   // Loop scheduler with crossfade
   useEffect(() => {
