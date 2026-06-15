@@ -6,6 +6,7 @@ import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X, Heart } from
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
+import { EventThemeScene } from "@/components/EventTheme";
 
 export const Route = createFileRoute("/event/$id/afterfest")({
   head: () => ({ meta: [{ title: "AfterFest · InstaBão" }] }),
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/event/$id/afterfest")({
 });
 
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
-type EventRow = { id: string; name: string; event_date: string | null; status: string };
+type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string };
 type LikeRow = { photo_id: string; client_id: string };
 
 function AfterFestPage() {
@@ -132,7 +133,7 @@ function AfterFestPage() {
   }
 
   return (
-    <div className="min-h-screen paper-noise pb-20">
+    <EventThemeScene theme={ev?.theme} className="min-h-screen relative pb-20">
       <Toaster richColors position="top-center" />
       <header className="max-w-6xl mx-auto px-6 pt-8">
         <Link to="/" className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:underline">
