@@ -13,9 +13,6 @@ export const Route = createFileRoute("/event/$id/tv")({
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type Sponsor = { id: string; image_url: string };
 
-const PHOTO_MS = 5000;
-const SPONSOR_MS = 7000;
-const PHOTOS_PER_BLOCK = 5;
 const FADE_MS = 700;
 
 type Slide =
@@ -27,6 +24,7 @@ function TVPage() {
   const [eventName, setEventName] = useState("");
   const [status, setStatus] = useState<string>("active");
   const [theme, setTheme] = useState<string>("default");
+  const timingRef = useRef({ photoMs: 5000, sponsorMs: 7000, perBlock: 5 });
   const [uploadUrl, setUploadUrl] = useState("");
   const photosRef = useRef<Photo[]>([]);
   const sponsorsRef = useRef<Sponsor[]>([]);
@@ -47,8 +45,15 @@ function TVPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: ev } = await supabase.from("events").select("name,status,theme").eq("id", id).single();
-      if (ev) { setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default"); }
+      const { data: ev } = await supabase.from("events").select("name,status,theme,photo_seconds,sponsor_seconds,photos_per_block").eq("id", id).single();
+      if (ev) {
+        setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default");
+        timingRef.current = {
+          photoMs: (ev.photo_seconds ?? 5) * 1000,
+          sponsorMs: (ev.sponsor_seconds ?? 7) * 1000,
+          perBlock: ev.photos_per_block ?? 5,
+        };
+      }
       const { data: ph } = await supabase
         .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
       const initial = (ph ?? []) as Photo[];
