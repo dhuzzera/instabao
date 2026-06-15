@@ -10,15 +10,20 @@ import { EventThemeScene } from "@/components/EventTheme";
 
 export const Route = createFileRoute("/event/$id/afterfest")({
   head: () => ({ meta: [{ title: "AfterFest · InstaBão" }] }),
-  component: AfterFestPage,
+  component: AfterFestRoute,
 });
+
+function AfterFestRoute() {
+  const { id } = Route.useParams();
+  return <AfterFestPage eventId={id} />;
+}
 
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string };
 type LikeRow = { photo_id: string; client_id: string };
 
-function AfterFestPage() {
-  const { id } = Route.useParams();
+export function AfterFestPage({ eventId: id }: { eventId: string }) {
+
   const [ev, setEv] = useState<EventRow | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
