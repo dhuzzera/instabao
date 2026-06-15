@@ -13,9 +13,6 @@ export const Route = createFileRoute("/event/$id/tv")({
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type Sponsor = { id: string; image_url: string };
 
-const PHOTO_MS = 5000;
-const SPONSOR_MS = 7000;
-const PHOTOS_PER_BLOCK = 5;
 const FADE_MS = 700;
 
 type Slide =
@@ -27,6 +24,7 @@ function TVPage() {
   const [eventName, setEventName] = useState("");
   const [status, setStatus] = useState<string>("active");
   const [theme, setTheme] = useState<string>("default");
+  const timingRef = useRef({ photoMs: 5000, sponsorMs: 7000, perBlock: 5 });
   const [uploadUrl, setUploadUrl] = useState("");
   const photosRef = useRef<Photo[]>([]);
   const sponsorsRef = useRef<Sponsor[]>([]);
@@ -47,8 +45,15 @@ function TVPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: ev } = await supabase.from("events").select("name,status,theme").eq("id", id).single();
-      if (ev) { setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default"); }
+      const { data: ev } = await supabase.from("events").select("name,status,theme,photo_seconds,sponsor_seconds,photos_per_block").eq("id", id).single();
+      if (ev) {
+        setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default");
+        timingRef.current = {
+          photoMs: (ev.photo_seconds ?? 5) * 1000,
+          sponsorMs: (ev.sponsor_seconds ?? 7) * 1000,
+          perBlock: ev.photos_per_block ?? 5,
+        };
+      }
       const { data: ph } = await supabase
         .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
       const initial = (ph ?? []) as Photo[];
@@ -82,6 +87,18 @@ function TVPage() {
           sponsorsRef.current = (data ?? []) as Sponsor[];
           force(x => x + 1);
         })
+      .on("postgres_changes",
+        { event: "UPDATE", schema: "public", table: "events", filter: `id=eq.${id}` },
+        (payload) => {
+          const row = payload.new as { status?: string; theme?: string; photo_seconds?: number; sponsor_seconds?: number; photos_per_block?: number };
+          if (row.status) setStatus(row.status);
+          if (row.theme) setTheme(row.theme);
+          timingRef.current = {
+            photoMs: (row.photo_seconds ?? 5) * 1000,
+            sponsorMs: (row.sponsor_seconds ?? 7) * 1000,
+            perBlock: row.photos_per_block ?? 5,
+          };
+        })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [id]);
@@ -96,25 +113,26 @@ function TVPage() {
       const photos = photosRef.current;
       const sponsors = sponsorsRef.current;
       const state = idxRef.current;
+      const { photoMs, sponsorMs, perBlock } = timingRef.current;
 
       // Brand-new uploads jump the queue so guests see their photo right away.
       if (freshQueueRef.current.length > 0) {
         const ph = freshQueueRef.current.shift()!;
         state.blockCount += 1;
-        return { slide: { kind: "photo", photo: ph }, ms: PHOTO_MS };
+        return { slide: { kind: "photo", photo: ph }, ms: photoMs };
       }
 
-      if (status === "active" && state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
+      if (status === "active" && state.blockCount >= perBlock && sponsors.length > 0) {
         const sp = sponsors[state.sponsorIdx % sponsors.length];
         state.sponsorIdx = (state.sponsorIdx + 1) % Math.max(sponsors.length, 1);
         state.blockCount = 0;
-        return { slide: { kind: "sponsor", sponsor: sp }, ms: SPONSOR_MS };
+        return { slide: { kind: "sponsor", sponsor: sp }, ms: sponsorMs };
       }
       if (photos.length === 0) return { slide: null, ms: 2000 };
       const ph = photos[state.photoIdx % photos.length];
       state.photoIdx = (state.photoIdx + 1) % Math.max(photos.length, 1);
       state.blockCount += 1;
-      return { slide: { kind: "photo", photo: ph }, ms: PHOTO_MS };
+      return { slide: { kind: "photo", photo: ph }, ms: photoMs };
     }
 
     function next() {

@@ -17,7 +17,7 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { ThemePicker } from "@/components/ThemePicker";
 
 
-type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string };
+type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string; photo_seconds: number; sponsor_seconds: number; photos_per_block: number };
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type Sponsor = { id: string; image_url: string; position: number };
 
@@ -337,6 +337,8 @@ function AdminPage() {
             </div>
           </Card>
 
+          <SlideshowTimingCard ev={ev} onSaved={loadAll} />
+
           <ThemePicker eventId={id} value={ev?.theme} onChanged={loadAll} />
 
           <ModeratorsPanel />
@@ -430,4 +432,66 @@ function EditEventDialog({ ev, onSaved }: { ev: EventRow | null; onSaved: () => 
     </Dialog>
   );
 }
+
+function SlideshowTimingCard({ ev, onSaved }: { ev: EventRow | null; onSaved: () => void }) {
+  const [photoS, setPhotoS] = useState(5);
+  const [sponsorS, setSponsorS] = useState(7);
+  const [perBlock, setPerBlock] = useState(5);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (ev) {
+      setPhotoS(ev.photo_seconds ?? 5);
+      setSponsorS(ev.sponsor_seconds ?? 7);
+      setPerBlock(ev.photos_per_block ?? 5);
+      setDirty(false);
+    }
+  }, [ev?.id, ev?.photo_seconds, ev?.sponsor_seconds, ev?.photos_per_block]);
+
+  async function save() {
+    if (!ev) return;
+    setSaving(true);
+    const { error } = await supabase.from("events").update({
+      photo_seconds: photoS,
+      sponsor_seconds: sponsorS,
+      photos_per_block: perBlock,
+    }).eq("id", ev.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Tempos atualizados");
+    setDirty(false);
+    onSaved();
+  }
+
+  function Row({ label, value, setValue, min, max, suffix }: { label: string; value: number; setValue: (n: number) => void; min: number; max: number; suffix: string }) {
+    return (
+      <div>
+        <div className="flex justify-between text-xs mb-1">
+          <span className="text-muted-foreground">{label}</span>
+          <b className="text-foreground">{value} {suffix}</b>
+        </div>
+        <input type="range" min={min} max={max} step={1} value={value}
+          onChange={e => { setValue(Number(e.target.value)); setDirty(true); }}
+          className="w-full accent-foreground" disabled={!ev} />
+      </div>
+    );
+  }
+
+  return (
+    <Card className="p-5">
+      <h2 className="font-display text-xl text-foreground mb-3">Tempo do telão</h2>
+      <div className="space-y-4">
+        <Row label="Segundos por foto" value={photoS} setValue={setPhotoS} min={2} max={20} suffix="s" />
+        <Row label="Segundos por patrocinador" value={sponsorS} setValue={setSponsorS} min={2} max={20} suffix="s" />
+        <Row label="Fotos entre patrocinadores" value={perBlock} setValue={setPerBlock} min={1} max={30} suffix="fotos" />
+      </div>
+      <Button onClick={save} disabled={!dirty || saving || !ev} className="w-full mt-4">
+        {saving ? "Salvando…" : "Salvar"}
+      </Button>
+      <p className="text-[10px] text-muted-foreground mt-2 text-center">As mudanças aparecem no telão instantaneamente.</p>
+    </Card>
+  );
+}
+
 
