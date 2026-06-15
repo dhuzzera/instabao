@@ -9,12 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventIdUploadRouteImport } from './routes/event.$id.upload'
 import { Route as EventIdTvRouteImport } from './routes/event.$id.tv'
 import { Route as EventIdAfterfestRouteImport } from './routes/event.$id.afterfest'
 import { Route as AuthenticatedEventIdAdminRouteImport } from './routes/_authenticated/event.$id.admin'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,13 +48,14 @@ const EventIdAfterfestRoute = EventIdAfterfestRouteImport.update({
 } as any)
 const AuthenticatedEventIdAdminRoute =
   AuthenticatedEventIdAdminRouteImport.update({
-    id: '/_authenticated/event/$id/admin',
+    id: '/event/$id/admin',
     path: '/event/$id/admin',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
@@ -51,6 +63,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
@@ -59,6 +72,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
@@ -68,6 +83,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
@@ -75,6 +91,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
@@ -82,6 +99,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
@@ -90,14 +109,29 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   EventIdAfterfestRoute: typeof EventIdAfterfestRoute
   EventIdTvRoute: typeof EventIdTvRoute
   EventIdUploadRoute: typeof EventIdUploadRoute
-  AuthenticatedEventIdAdminRoute: typeof AuthenticatedEventIdAdminRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -131,17 +165,29 @@ declare module '@tanstack/react-router' {
       path: '/event/$id/admin'
       fullPath: '/event/$id/admin'
       preLoaderRoute: typeof AuthenticatedEventIdAdminRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedEventIdAdminRoute: typeof AuthenticatedEventIdAdminRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedEventIdAdminRoute: AuthenticatedEventIdAdminRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   EventIdAfterfestRoute: EventIdAfterfestRoute,
   EventIdTvRoute: EventIdTvRoute,
   EventIdUploadRoute: EventIdUploadRoute,
-  AuthenticatedEventIdAdminRoute: AuthenticatedEventIdAdminRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
