@@ -211,7 +211,7 @@ function AdminPage() {
               {ev?.status === "active" ? "Finalizar evento" : "Reativar"}
             </Button>
             <Button asChild variant="outline">
-              <Link to="/event/$id/afterfest" params={{ id }} target="_blank">
+              <Link to={ev?.short_code ? "/e/$code/afterfest" : "/event/$id/afterfest"} params={ev?.short_code ? { code: ev.short_code } : { id }} target="_blank">
                 <Sparkles className="h-4 w-4 mr-2" /> AfterFest
               </Link>
             </Button>
