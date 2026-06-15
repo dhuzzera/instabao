@@ -96,7 +96,7 @@ function TVPage() {
 
     next();
     return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, []);
+  }, [status]);
 
   // Fullscreen helper
   function goFullscreen() {
