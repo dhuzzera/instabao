@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +20,15 @@ type EventRow = { id: string; name: string; event_date: string | null; status: s
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type Sponsor = { id: string; image_url: string; position: number };
 
-export const Route = createFileRoute("/_authenticated/event/$id/admin")({
+export const Route = createFileRoute("/event/$id/admin")({
+  ssr: false,
+  beforeLoad: async ({ location }) => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/auth", search: { redirect: location.href } });
+    }
+    return { user: data.user };
+  },
   head: () => ({ meta: [{ title: "Gerenciar · InstaBão" }] }),
   component: AdminPage,
 });
