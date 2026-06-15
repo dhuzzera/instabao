@@ -155,6 +155,7 @@ function AdminPage() {
             <p className="text-sm text-muted-foreground">{ev?.event_date ?? "sem data"} · status: <b className="text-foreground">{ev?.status}</b></p>
           </div>
           <div className="flex gap-2 flex-wrap">
+            <EditEventDialog ev={ev} onSaved={loadAll} />
             <Button variant="outline" onClick={toggleStatus}>
               {ev?.status === "active" ? "Finalizar evento" : "Reativar"}
             </Button>
@@ -171,6 +172,7 @@ function AdminPage() {
           </div>
         </div>
       </header>
+
 
       <main className="max-w-5xl mx-auto px-6 mt-8 grid gap-6 md:grid-cols-[360px_1fr]">
         <aside className="space-y-6">
