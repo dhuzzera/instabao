@@ -207,10 +207,8 @@ export function PhotoFrame({
   const frameStyle: React.CSSProperties = ratio
     ? {
         aspectRatio: String(ratio),
-        maxWidth: "calc(100vw - 3rem)",
+        width: "calc(100vw - 3rem)",
         maxHeight: "calc(100vh - 3rem)",
-        width: ratio >= 1 ? "calc(100vh - 3rem)" : undefined,
-        height: ratio < 1 ? "calc(100vw - 3rem)" : undefined,
       }
     : { width: "min(100%, calc(100vw - 3rem))", height: "min(100%, calc(100vh - 3rem))" };
 
