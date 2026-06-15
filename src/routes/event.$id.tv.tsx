@@ -108,7 +108,7 @@ function TVPage() {
         {current?.kind === "photo" && (
           <Slide key={current.photo.id}>
             <img src={current.photo.image_url} alt=""
-              className="w-full h-full object-cover animate-slow-zoom" />
+              className="w-full h-full object-contain bg-black" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/30" />
             {current.photo.guest_name && (
               <div className="absolute bottom-16 left-0 right-0 text-center px-12">
