@@ -226,18 +226,11 @@ function SlideLayer({ slide, visible, theme }: { slide: Slide | null; visible: b
       }}
     >
       {slide?.kind === "photo" && (
-        <PhotoFrame theme={theme}>
-          <img src={slide.photo.image_url} alt=""
-            className="w-full h-full object-contain bg-black" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/30" />
-          {slide.photo.guest_name && (
-            <div className="absolute bottom-8 left-0 right-0 text-center px-12">
-              <p className="font-display text-5xl md:text-7xl drop-shadow-2xl text-white">
-                {slide.photo.guest_name}
-              </p>
-            </div>
-          )}
-        </PhotoFrame>
+        <PhotoFrame
+          theme={theme}
+          src={slide.photo.image_url}
+          caption={slide.photo.guest_name}
+        />
       )}
       {slide?.kind === "sponsor" && (
         <div className="w-full h-full grid place-items-center bg-white text-black p-16 relative">

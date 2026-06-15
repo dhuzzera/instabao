@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getTheme, type EventTheme, type ParticleKind, type TopStrip } from "@/lib/themes";
 
 type Props = {
@@ -187,35 +187,79 @@ const FRAME_CORNERS: Record<string, string[]> = {
   "ano-novo": ["🎆", "🥂", "🎇", "✨"],
 };
 
-export function PhotoFrame({ theme, children }: { theme?: string | null; children: React.ReactNode }) {
+export function PhotoFrame({
+  theme,
+  src,
+  caption,
+}: {
+  theme?: string | null;
+  src: string;
+  caption?: string | null;
+}) {
   const t = getTheme(theme);
   const corners = FRAME_CORNERS[t.key] ?? FRAME_CORNERS.default;
+  const [ratio, setRatio] = useState<number | null>(null);
+
   return (
-    <div className="absolute inset-0 p-6 md:p-10">
+    <div className="absolute inset-0 grid place-items-center p-6 md:p-10">
       <div
-        className="relative w-full h-full rounded-3xl overflow-hidden"
+        className="relative max-w-full max-h-full"
         style={{
-          padding: "8px",
-          background: t.gradient,
-          boxShadow: `0 0 60px ${t.accent}55, 0 0 0 2px ${t.accent}33 inset`,
+          aspectRatio: ratio ?? undefined,
+          // When ratio known, fit inside available area
+          width: ratio ? "auto" : "100%",
+          height: ratio ? "100%" : "100%",
+          // Force the box to honor both constraints
+          ...(ratio
+            ? ratio >= 1
+              ? { width: "min(100%, calc(100% * 1))", height: "auto", maxHeight: "100%" }
+              : { height: "100%", width: "auto", maxWidth: "100%" }
+            : {}),
         }}
       >
-        <div className="relative w-full h-full rounded-[20px] overflow-hidden bg-black">
-          {children}
+        <div
+          className="relative w-full h-full rounded-3xl overflow-hidden"
+          style={{
+            padding: "8px",
+            background: t.gradient,
+            boxShadow: `0 0 60px ${t.accent}55, 0 0 0 2px ${t.accent}33 inset`,
+          }}
+        >
+          <div className="relative w-full h-full rounded-[20px] overflow-hidden bg-black">
+            <img
+              src={src}
+              alt=""
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                if (img.naturalWidth && img.naturalHeight) {
+                  setRatio(img.naturalWidth / img.naturalHeight);
+                }
+              }}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/30 pointer-events-none" />
+            {caption && (
+              <div className="absolute bottom-6 left-0 right-0 text-center px-8">
+                <p className="font-display text-4xl md:text-6xl drop-shadow-2xl text-white">
+                  {caption}
+                </p>
+              </div>
+            )}
+          </div>
+          {/* Corner decorations */}
+          <span className="absolute -top-3 -left-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[-15deg]">
+            {corners[0]}
+          </span>
+          <span className="absolute -top-3 -right-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[15deg]">
+            {corners[1]}
+          </span>
+          <span className="absolute -bottom-3 -left-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[15deg]">
+            {corners[2]}
+          </span>
+          <span className="absolute -bottom-3 -right-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[-15deg]">
+            {corners[3]}
+          </span>
         </div>
-        {/* Corner decorations */}
-        <span className="absolute -top-3 -left-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[-15deg]">
-          {corners[0]}
-        </span>
-        <span className="absolute -top-3 -right-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[15deg]">
-          {corners[1]}
-        </span>
-        <span className="absolute -bottom-3 -left-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[15deg]">
-          {corners[2]}
-        </span>
-        <span className="absolute -bottom-3 -right-3 text-5xl md:text-6xl drop-shadow-lg select-none rotate-[-15deg]">
-          {corners[3]}
-        </span>
       </div>
     </div>
   );
