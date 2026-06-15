@@ -57,10 +57,16 @@ function AdminPage() {
 
   useEffect(() => {
     loadAll();
-    if (typeof window !== "undefined") {
+  }, [id]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (ev?.short_code) {
+      setUploadUrl(`${window.location.origin}/e/${ev.short_code}`);
+    } else {
       setUploadUrl(`${window.location.origin}/event/${id}/upload`);
     }
-  }, [id]);
+  }, [ev?.short_code, id]);
 
   useEffect(() => {
     const ch = supabase.channel(`admin-${id}`)
