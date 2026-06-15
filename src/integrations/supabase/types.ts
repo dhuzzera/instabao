@@ -23,6 +23,7 @@ export type Database = {
           name: string
           photo_seconds: number
           photos_per_block: number
+          short_code: string | null
           sponsor_seconds: number
           status: string
           theme: string
@@ -35,6 +36,7 @@ export type Database = {
           name: string
           photo_seconds?: number
           photos_per_block?: number
+          short_code?: string | null
           sponsor_seconds?: number
           status?: string
           theme?: string
@@ -47,6 +49,7 @@ export type Database = {
           name?: string
           photo_seconds?: number
           photos_per_block?: number
+          short_code?: string | null
           sponsor_seconds?: number
           status?: string
           theme?: string

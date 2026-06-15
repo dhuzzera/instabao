@@ -17,7 +17,7 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { ThemePicker } from "@/components/ThemePicker";
 
 
-type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string; photo_seconds: number; sponsor_seconds: number; photos_per_block: number };
+type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string; photo_seconds: number; sponsor_seconds: number; photos_per_block: number; short_code: string | null };
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type Sponsor = { id: string; image_url: string; position: number };
 
@@ -46,7 +46,7 @@ function AdminPage() {
 
   async function loadAll() {
     const [{ data: e }, { data: ph }, { data: sp }] = await Promise.all([
-      supabase.from("events").select("*").eq("id", id).single(),
+      supabase.from("events").select("*,short_code").eq("id", id).single(),
       supabase.from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }),
       supabase.from("sponsors").select("*").eq("event_id", id).order("position"),
     ]);
@@ -57,10 +57,16 @@ function AdminPage() {
 
   useEffect(() => {
     loadAll();
-    if (typeof window !== "undefined") {
+  }, [id]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (ev?.short_code) {
+      setUploadUrl(`${window.location.origin}/e/${ev.short_code}`);
+    } else {
       setUploadUrl(`${window.location.origin}/event/${id}/upload`);
     }
-  }, [id]);
+  }, [ev?.short_code, id]);
 
   useEffect(() => {
     const ch = supabase.channel(`admin-${id}`)
