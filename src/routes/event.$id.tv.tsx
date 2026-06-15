@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/event/$id/tv")({
@@ -13,18 +14,32 @@ type Sponsor = { id: string; image_url: string };
 const PHOTO_MS = 5000;
 const SPONSOR_MS = 7000;
 const PHOTOS_PER_BLOCK = 5;
+const FADE_MS = 700;
+
+type Slide =
+  | { kind: "photo"; photo: Photo }
+  | { kind: "sponsor"; sponsor: Sponsor };
 
 function TVPage() {
   const { id } = Route.useParams();
   const [eventName, setEventName] = useState("");
   const [status, setStatus] = useState<string>("active");
+  const [uploadUrl, setUploadUrl] = useState("");
   const photosRef = useRef<Photo[]>([]);
   const sponsorsRef = useRef<Sponsor[]>([]);
   const [, force] = useState(0);
-  const [current, setCurrent] = useState<{ kind: "photo"; photo: Photo } | { kind: "sponsor"; sponsor: Sponsor } | null>(null);
+  // Two-layer crossfade: keep two slides mounted and swap which one is visible.
+  const [slideA, setSlideA] = useState<Slide | null>(null);
+  const [slideB, setSlideB] = useState<Slide | null>(null);
+  const [showA, setShowA] = useState(true);
   const idxRef = useRef({ photoIdx: 0, blockCount: 0, sponsorIdx: 0 });
 
-  // Fetch initial data
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setUploadUrl(`${window.location.origin}/event/${id}/upload`);
+    }
+  }, [id]);
+
   useEffect(() => {
     (async () => {
       const { data: ev } = await supabase.from("events").select("name,status").eq("id", id).single();
@@ -39,7 +54,6 @@ function TVPage() {
     })();
   }, [id]);
 
-  // Realtime
   useEffect(() => {
     const ch = supabase.channel(`tv-${id}`)
       .on("postgres_changes",
@@ -59,98 +73,94 @@ function TVPage() {
     return () => { supabase.removeChannel(ch); };
   }, [id]);
 
-  // Loop scheduler — uses refs so live updates don't reset the loop.
+  // Loop scheduler with crossfade
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let useA = false; // we'll set the *other* layer then flip showA
 
-    function next() {
-      if (cancelled) return;
+    function pick(): { slide: Slide | null; ms: number } {
       const photos = photosRef.current;
       const sponsors = sponsorsRef.current;
       const state = idxRef.current;
 
-      // Decide if we should show sponsor block (after PHOTOS_PER_BLOCK photos)
-      // Skip sponsors in afterfest/memory mode
       if (status === "active" && state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
         const sp = sponsors[state.sponsorIdx % sponsors.length];
         state.sponsorIdx = (state.sponsorIdx + 1) % Math.max(sponsors.length, 1);
         state.blockCount = 0;
-        setCurrent({ kind: "sponsor", sponsor: sp });
-        timer = setTimeout(next, SPONSOR_MS);
-        return;
+        return { slide: { kind: "sponsor", sponsor: sp }, ms: SPONSOR_MS };
       }
-      // Otherwise show photo
-      if (photos.length === 0) {
-        // Wait for photos
-        setCurrent(null);
-        timer = setTimeout(next, 2000);
-        return;
-      }
+      if (photos.length === 0) return { slide: null, ms: 2000 };
       const ph = photos[state.photoIdx % photos.length];
       state.photoIdx = (state.photoIdx + 1) % Math.max(photos.length, 1);
       state.blockCount += 1;
-      setCurrent({ kind: "photo", photo: ph });
-      timer = setTimeout(next, PHOTO_MS);
+      return { slide: { kind: "photo", photo: ph }, ms: PHOTO_MS };
+    }
+
+    function next() {
+      if (cancelled) return;
+      const { slide, ms } = pick();
+      if (slide === null) {
+        timer = setTimeout(next, ms);
+        return;
+      }
+      // Load into hidden layer, then flip
+      if (useA) setSlideA(slide); else setSlideB(slide);
+      setShowA(useA);
+      useA = !useA;
+      timer = setTimeout(next, ms);
     }
 
     next();
     return () => { cancelled = true; if (timer) clearTimeout(timer); };
   }, [status]);
 
-  // Fullscreen helper
   function goFullscreen() {
     document.documentElement.requestFullscreen?.().catch(() => {});
   }
 
+  const hasContent = photosRef.current.length > 0 || slideA || slideB;
+
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden select-none" onClick={goFullscreen}>
-      {/* Slide */}
-      <div className="absolute inset-0">
-        {current?.kind === "photo" && (
-          <Slide key={current.photo.id}>
-            <img src={current.photo.image_url} alt=""
-              className="w-full h-full object-contain bg-black" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/30" />
-            {current.photo.guest_name && (
-              <div className="absolute bottom-16 left-0 right-0 text-center px-12">
-                <p className="font-display text-5xl md:text-7xl drop-shadow-2xl text-white">
-                  {current.photo.guest_name}
-                </p>
+      <SlideLayer slide={slideA} visible={showA} />
+      <SlideLayer slide={slideB} visible={!showA} />
+
+      {!hasContent && (
+        <div className="absolute inset-0 grid place-items-center bg-black text-white text-center px-8">
+          <div>
+            <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
+            <p className="text-2xl md:text-3xl opacity-90 mb-8">Esperando as primeiras fotos…</p>
+            {uploadUrl && (
+              <div className="inline-flex flex-col items-center gap-3 bg-white text-black p-6 rounded-3xl">
+                <QRCodeCanvas value={uploadUrl} size={220} level="M" includeMargin />
+                <p className="font-display text-2xl">Aponte a câmera</p>
+                <p className="text-xs uppercase tracking-widest opacity-70">manda sua foto</p>
               </div>
             )}
-          </Slide>
-        )}
-        {current?.kind === "sponsor" && (
-          <Slide key={current.sponsor.id}>
-            <div className="w-full h-full grid place-items-center bg-white text-black p-16">
-              <img src={current.sponsor.image_url} alt="patrocinador"
-                className="max-w-[80%] max-h-[70%] object-contain" />
-              <p className="absolute bottom-16 font-display text-3xl md:text-5xl text-black">
-                Quem faz a festa acontecer
-              </p>
-            </div>
-          </Slide>
-        )}
-        {!current && (
-          <div className="w-full h-full grid place-items-center bg-black text-white text-center px-8">
-            <div>
-              <p className="font-display text-6xl md:text-8xl mb-4">InstaBão</p>
-              <p className="text-2xl md:text-3xl opacity-90">Esperando as primeiras fotos…</p>
-            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Bunting top */}
       <div className="absolute top-0 left-0 right-0 h-6 bunting pointer-events-none" />
 
-      {/* Event badge */}
       {eventName && (
         <div className="absolute top-8 left-8 bg-black/40 backdrop-blur px-5 py-2 rounded-full">
           <p className="font-display text-2xl">{eventName}</p>
         </div>
       )}
+
+      {/* Persistent QR in corner once photos are flowing */}
+      {hasContent && uploadUrl && (
+        <div className="absolute top-8 right-8 bg-white text-black p-2 rounded-xl flex items-center gap-3 pr-4">
+          <QRCodeCanvas value={uploadUrl} size={72} level="M" />
+          <div className="text-left leading-tight">
+            <p className="font-display text-xl">Manda a sua</p>
+            <p className="text-[10px] uppercase tracking-widest opacity-70">aponte a câmera</p>
+          </div>
+        </div>
+      )}
+
       <div className="absolute bottom-4 right-6 text-xs opacity-60">
         InstaBão · {status === "finished" ? "memórias" : "ao vivo"}
       </div>
@@ -158,18 +168,38 @@ function TVPage() {
   );
 }
 
-function Slide({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    const t = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(t);
-  }, []);
+function SlideLayer({ slide, visible }: { slide: Slide | null; visible: boolean }) {
   return (
     <div
-      className="absolute inset-0 transition-opacity duration-500"
-      style={{ opacity: mounted ? 1 : 0 }}
+      className="absolute inset-0"
+      style={{
+        opacity: visible && slide ? 1 : 0,
+        transition: `opacity ${FADE_MS}ms ease-in-out`,
+      }}
     >
-      {children}
+      {slide?.kind === "photo" && (
+        <>
+          <img src={slide.photo.image_url} alt=""
+            className="w-full h-full object-contain bg-black" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/30" />
+          {slide.photo.guest_name && (
+            <div className="absolute bottom-16 left-0 right-0 text-center px-12">
+              <p className="font-display text-5xl md:text-7xl drop-shadow-2xl text-white">
+                {slide.photo.guest_name}
+              </p>
+            </div>
+          )}
+        </>
+      )}
+      {slide?.kind === "sponsor" && (
+        <div className="w-full h-full grid place-items-center bg-white text-black p-16 relative">
+          <img src={slide.sponsor.image_url} alt="patrocinador"
+            className="max-w-[80%] max-h-[70%] object-contain" />
+          <p className="absolute bottom-16 font-display text-3xl md:text-5xl text-black">
+            Quem faz a festa acontecer
+          </p>
+        </div>
+      )}
     </div>
   );
 }

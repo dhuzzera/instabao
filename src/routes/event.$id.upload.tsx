@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadEventFile } from "@/lib/upload";
+import { compressImage } from "@/lib/compress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +31,7 @@ function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [progress, setProgress] = useState<string>("");
   const [sent, setSent] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -44,16 +47,30 @@ function UploadPage() {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  function celebrate() {
+    confetti({
+      particleCount: 120,
+      spread: 90,
+      origin: { y: 0.6 },
+      colors: ["#f43f5e", "#fbbf24", "#10b981", "#3b82f6", "#a855f7"],
+    });
+    setTimeout(() => confetti({ particleCount: 60, spread: 120, origin: { y: 0.7 } }), 250);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) { toast.error("Tire ou escolha uma foto"); return; }
     setSending(true);
     try {
-      const url = await uploadEventFile(id, file, "photo");
+      setProgress("Otimizando foto…");
+      const optimized = await compressImage(file);
+      setProgress("Enviando pro telão…");
+      const url = await uploadEventFile(id, optimized, "photo");
       const { error } = await supabase.from("photos").insert({
         event_id: id, image_url: url, guest_name: guest.trim() || null,
       });
       if (error) throw error;
+      celebrate();
       setSent(true);
       setFile(null); setGuest("");
       setTimeout(() => setSent(false), 3500);
@@ -62,6 +79,7 @@ function UploadPage() {
       toast.error(msg);
     } finally {
       setSending(false);
+      setProgress("");
     }
   }
 
@@ -140,7 +158,7 @@ function UploadPage() {
 
           <Button type="submit" size="lg" className="w-full text-lg" disabled={sending || !file}>
             <Upload className="h-5 w-5 mr-2" />
-            {sending ? "Enviando…" : "Enviar pro telão"}
+            {sending ? (progress || "Enviando…") : "Enviar pro telão"}
           </Button>
 
           <p className="text-center text-xs text-muted-foreground pt-2">

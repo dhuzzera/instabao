@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadEventFile } from "@/lib/upload";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles } from "lucide-react";
+import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus } from "lucide-react";
 
 type EventRow = { id: string; name: string; event_date: string | null; status: string };
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
@@ -24,6 +24,7 @@ function AdminPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [uploadUrl, setUploadUrl] = useState("");
+  const [copied, setCopied] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
   const sponsorInput = useRef<HTMLInputElement>(null);
 
@@ -45,7 +46,6 @@ function AdminPage() {
     }
   }, [id]);
 
-  // Realtime photos
   useEffect(() => {
     const ch = supabase.channel(`admin-${id}`)
       .on("postgres_changes",
@@ -61,6 +61,18 @@ function AdminPage() {
     const url = canvas.toDataURL("image/png");
     const a = document.createElement("a");
     a.href = url; a.download = `qr-${ev?.name ?? "evento"}.png`; a.click();
+  }
+
+  async function copyLink() {
+    if (!uploadUrl) return;
+    try {
+      await navigator.clipboard.writeText(uploadUrl);
+      setCopied(true);
+      toast.success("Link copiado!");
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast.error("Não consegui copiar");
+    }
   }
 
   async function addSponsor(e: React.ChangeEvent<HTMLInputElement>) {
@@ -97,6 +109,33 @@ function AdminPage() {
     const { error } = await supabase.from("events").update({ status: newStatus }).eq("id", id);
     if (error) toast.error(error.message); else loadAll();
   }
+
+  // Stats
+  const stats = useMemo(() => {
+    if (photos.length === 0) return null;
+    const senders = new Set(photos.map(p => p.guest_name?.trim().toLowerCase() || "(anônimo)"));
+    const times = photos.map(p => new Date(p.created_at).getTime());
+    const first = Math.min(...times);
+    const last = Math.max(...times);
+    const spanH = Math.max((last - first) / 3_600_000, 1 / 60);
+    const rate = photos.length / spanH;
+    // Peak hour
+    const byHour = new Map<number, number>();
+    for (const p of photos) {
+      const h = new Date(p.created_at).getHours();
+      byHour.set(h, (byHour.get(h) ?? 0) + 1);
+    }
+    let peakHour = -1, peakN = 0;
+    for (const [h, n] of byHour) if (n > peakN) { peakN = n; peakHour = h; }
+    // Top senders
+    const counts = new Map<string, number>();
+    for (const p of photos) {
+      const k = p.guest_name?.trim() || "Anônimo";
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return { senders: senders.size, ratePerHour: rate, peakHour, top };
+  }, [photos]);
 
   return (
     <div className="min-h-screen paper-noise pb-16">
@@ -137,15 +176,64 @@ function AdminPage() {
               {uploadUrl && <QRCodeCanvas value={uploadUrl} size={220} level="M" includeMargin />}
             </div>
             <p className="mt-3 text-xs text-muted-foreground break-all">{uploadUrl}</p>
-            <Button onClick={downloadQR} variant="secondary" className="w-full mt-3">
-              <Download className="h-4 w-4 mr-2" /> Baixar QR
-            </Button>
-            <Button asChild variant="ghost" className="w-full">
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <Button onClick={copyLink} variant="secondary">
+                {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                {copied ? "Copiado!" : "Copiar link"}
+              </Button>
+              <Button onClick={downloadQR} variant="secondary">
+                <Download className="h-4 w-4 mr-2" /> Baixar QR
+              </Button>
+            </div>
+            <Button asChild variant="ghost" className="w-full mt-1">
               <Link to="/event/$id/upload" params={{ id }}>
                 <Camera className="h-4 w-4 mr-2" /> Abrir página de upload
               </Link>
             </Button>
           </Card>
+
+          {stats && (
+            <Card className="p-5">
+              <h2 className="font-display text-xl text-foreground mb-3">Estatísticas</h2>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <ImagePlus className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Fotos:</span>
+                  <b className="text-foreground ml-auto">{photos.length}</b>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Convidados ativos:</span>
+                  <b className="text-foreground ml-auto">{stats.senders}</b>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Fotos/hora:</span>
+                  <b className="text-foreground ml-auto">{stats.ratePerHour.toFixed(1)}</b>
+                </li>
+                {stats.peakHour >= 0 && (
+                  <li className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Pico:</span>
+                    <b className="text-foreground ml-auto">{String(stats.peakHour).padStart(2, "0")}h</b>
+                  </li>
+                )}
+              </ul>
+              {stats.top.length > 0 && (
+                <>
+                  <p className="mt-4 mb-2 text-xs uppercase tracking-widest text-muted-foreground">Top convidados</p>
+                  <ol className="space-y-1 text-sm">
+                    {stats.top.map(([name, n], i) => (
+                      <li key={name + i} className="flex justify-between">
+                        <span className="truncate">{i + 1}. {name}</span>
+                        <b className="text-foreground">{n}</b>
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )}
+            </Card>
+          )}
 
           <Card className="p-5">
             <h2 className="font-display text-xl text-foreground mb-3">Patrocinadores</h2>
@@ -178,7 +266,7 @@ function AdminPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {photos.map(p => (
                 <div key={p.id} className="relative group rounded-xl overflow-hidden aspect-square bg-muted">
-                  <img src={p.image_url} alt="" className="w-full h-full object-contain" />
+                  <img src={p.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-contain" />
                   {p.guest_name && (
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2">
                       {p.guest_name}
