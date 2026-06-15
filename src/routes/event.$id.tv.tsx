@@ -71,7 +71,8 @@ function TVPage() {
       const state = idxRef.current;
 
       // Decide if we should show sponsor block (after PHOTOS_PER_BLOCK photos)
-      if (state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
+      // Skip sponsors in afterfest/memory mode
+      if (status === "active" && state.blockCount >= PHOTOS_PER_BLOCK && sponsors.length > 0) {
         const sp = sponsors[state.sponsorIdx % sponsors.length];
         state.sponsorIdx = (state.sponsorIdx + 1) % Math.max(sponsors.length, 1);
         state.blockCount = 0;
