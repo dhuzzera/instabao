@@ -9,12 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventIdUploadRouteImport } from './routes/event.$id.upload'
 import { Route as EventIdTvRouteImport } from './routes/event.$id.tv'
 import { Route as EventIdAfterfestRouteImport } from './routes/event.$id.afterfest'
-import { Route as EventIdAdminRouteImport } from './routes/event.$id.admin'
+import { Route as AuthenticatedEventIdAdminRouteImport } from './routes/_authenticated/event.$id.admin'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -35,61 +46,71 @@ const EventIdAfterfestRoute = EventIdAfterfestRouteImport.update({
   path: '/event/$id/afterfest',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EventIdAdminRoute = EventIdAdminRouteImport.update({
-  id: '/event/$id/admin',
-  path: '/event/$id/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedEventIdAdminRoute =
+  AuthenticatedEventIdAdminRouteImport.update({
+    id: '/event/$id/admin',
+    path: '/event/$id/admin',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/event/$id/admin': typeof EventIdAdminRoute
+  '/auth': typeof AuthRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
+  '/event/$id/admin': typeof AuthenticatedEventIdAdminRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/event/$id/admin': typeof EventIdAdminRoute
+  '/auth': typeof AuthRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
+  '/event/$id/admin': typeof AuthenticatedEventIdAdminRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/event/$id/admin': typeof EventIdAdminRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/event/$id/afterfest': typeof EventIdAfterfestRoute
   '/event/$id/tv': typeof EventIdTvRoute
   '/event/$id/upload': typeof EventIdUploadRoute
+  '/_authenticated/event/$id/admin': typeof AuthenticatedEventIdAdminRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/event/$id/admin'
+    | '/auth'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
+    | '/event/$id/admin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/event/$id/admin'
+    | '/auth'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
+    | '/event/$id/admin'
   id:
     | '__root__'
     | '/'
-    | '/event/$id/admin'
+    | '/_authenticated'
+    | '/auth'
     | '/event/$id/afterfest'
     | '/event/$id/tv'
     | '/event/$id/upload'
+    | '/_authenticated/event/$id/admin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  EventIdAdminRoute: typeof EventIdAdminRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   EventIdAfterfestRoute: typeof EventIdAfterfestRoute
   EventIdTvRoute: typeof EventIdTvRoute
   EventIdUploadRoute: typeof EventIdUploadRoute
@@ -97,6 +118,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -125,19 +160,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventIdAfterfestRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/event/$id/admin': {
-      id: '/event/$id/admin'
+    '/_authenticated/event/$id/admin': {
+      id: '/_authenticated/event/$id/admin'
       path: '/event/$id/admin'
       fullPath: '/event/$id/admin'
-      preLoaderRoute: typeof EventIdAdminRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedEventIdAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedEventIdAdminRoute: typeof AuthenticatedEventIdAdminRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedEventIdAdminRoute: AuthenticatedEventIdAdminRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  EventIdAdminRoute: EventIdAdminRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   EventIdAfterfestRoute: EventIdAfterfestRoute,
   EventIdTvRoute: EventIdTvRoute,
   EventIdUploadRoute: EventIdUploadRoute,
