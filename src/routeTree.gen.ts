@@ -10,33 +10,68 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EventIdUploadRouteImport } from './routes/event.$id.upload'
+import { Route as EventIdTvRouteImport } from './routes/event.$id.tv'
+import { Route as EventIdAdminRouteImport } from './routes/event.$id.admin'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventIdUploadRoute = EventIdUploadRouteImport.update({
+  id: '/event/$id/upload',
+  path: '/event/$id/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventIdTvRoute = EventIdTvRouteImport.update({
+  id: '/event/$id/tv',
+  path: '/event/$id/tv',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventIdAdminRoute = EventIdAdminRouteImport.update({
+  id: '/event/$id/admin',
+  path: '/event/$id/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/event/$id/admin': typeof EventIdAdminRoute
+  '/event/$id/tv': typeof EventIdTvRoute
+  '/event/$id/upload': typeof EventIdUploadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/event/$id/admin': typeof EventIdAdminRoute
+  '/event/$id/tv': typeof EventIdTvRoute
+  '/event/$id/upload': typeof EventIdUploadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/event/$id/admin': typeof EventIdAdminRoute
+  '/event/$id/tv': typeof EventIdTvRoute
+  '/event/$id/upload': typeof EventIdUploadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/event/$id/admin' | '/event/$id/tv' | '/event/$id/upload'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/event/$id/admin' | '/event/$id/tv' | '/event/$id/upload'
+  id:
+    | '__root__'
+    | '/'
+    | '/event/$id/admin'
+    | '/event/$id/tv'
+    | '/event/$id/upload'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EventIdAdminRoute: typeof EventIdAdminRoute
+  EventIdTvRoute: typeof EventIdTvRoute
+  EventIdUploadRoute: typeof EventIdUploadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +83,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/event/$id/upload': {
+      id: '/event/$id/upload'
+      path: '/event/$id/upload'
+      fullPath: '/event/$id/upload'
+      preLoaderRoute: typeof EventIdUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/event/$id/tv': {
+      id: '/event/$id/tv'
+      path: '/event/$id/tv'
+      fullPath: '/event/$id/tv'
+      preLoaderRoute: typeof EventIdTvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/event/$id/admin': {
+      id: '/event/$id/admin'
+      path: '/event/$id/admin'
+      fullPath: '/event/$id/admin'
+      preLoaderRoute: typeof EventIdAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EventIdAdminRoute: EventIdAdminRoute,
+  EventIdTvRoute: EventIdTvRoute,
+  EventIdUploadRoute: EventIdUploadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
