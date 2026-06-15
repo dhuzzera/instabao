@@ -144,14 +144,14 @@ function AdminPage() {
   return (
     <div className="min-h-screen paper-noise pb-16">
       <Toaster richColors position="top-center" />
-      <div className="h-4 bunting" />
       <header className="max-w-5xl mx-auto px-6 pt-8">
         <Link to="/" className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:underline">
           <ArrowLeft className="h-3.5 w-3.5" /> Eventos
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
           <div className="min-w-0">
-            <h1 className="text-4xl font-display text-foreground truncate">{ev?.name ?? "…"}</h1>
+            <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-brand-gradient">Gerenciar</p>
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground truncate mt-1">{ev?.name ?? "…"}</h1>
             <p className="text-sm text-muted-foreground">{ev?.event_date ?? "sem data"} · status: <b className="text-foreground">{ev?.status}</b></p>
           </div>
           <div className="flex gap-2 flex-wrap">

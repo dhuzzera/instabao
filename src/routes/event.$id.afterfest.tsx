@@ -135,16 +135,17 @@ function AfterFestPage() {
   return (
     <div className="min-h-screen paper-noise pb-20">
       <Toaster richColors position="top-center" />
-      <div className="h-4 bunting" />
       <header className="max-w-6xl mx-auto px-6 pt-8">
         <Link to="/" className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:underline">
           <ArrowLeft className="h-3.5 w-3.5" /> Eventos
         </Link>
         <div className="flex items-center gap-4 mt-4">
-          <img src={logoAsset.url} alt="InstaBão" className="h-16 w-16 rounded-2xl" />
+          <div className="story-ring-square shrink-0">
+            <img src={logoAsset.url} alt="InstaBão" className="h-16 w-16 rounded-2xl bg-white block" />
+          </div>
           <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">AfterFest</p>
-            <h1 className="text-4xl md:text-5xl font-display text-foreground truncate">
+            <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-brand-gradient">AfterFest</p>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground truncate mt-1">
               {ev?.name ?? "…"}
             </h1>
             {ev?.event_date && <p className="text-sm text-muted-foreground">{ev.event_date}</p>}
