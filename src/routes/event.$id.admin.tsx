@@ -291,3 +291,63 @@ function AdminPage() {
     </div>
   );
 }
+
+function EditEventDialog({ ev, onSaved }: { ev: EventRow | null; onSaved: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [date, setDate] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open && ev) {
+      setName(ev.name);
+      setDate(ev.event_date ?? "");
+    }
+  }, [open, ev]);
+
+  async function save() {
+    if (!ev || !name.trim()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("events")
+      .update({ name: name.trim(), event_date: date || null })
+      .eq("id", ev.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Evento atualizado");
+    setOpen(false);
+    onSaved();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" disabled={!ev}>
+          <Pencil className="h-4 w-4 mr-2" /> Editar
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar evento</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="ev-name">Nome</Label>
+            <Input id="ev-name" value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="ev-date">Data</Label>
+            <Input id="ev-date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={save} disabled={saving || !name.trim()}>
+            {saving ? "Salvando…" : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
