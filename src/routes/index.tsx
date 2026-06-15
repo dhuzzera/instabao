@@ -7,10 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Calendar, Camera, Tv, Plus, LogIn } from "lucide-react";
+import { Calendar, Camera, Tv, Plus, LogIn, Trash2 } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
 import { useAuthUser } from "@/lib/use-auth";
 import { SignOutButton } from "@/components/SignOutButton";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type EventRow = {
   id: string;
