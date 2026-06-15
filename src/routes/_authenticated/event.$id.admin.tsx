@@ -11,7 +11,9 @@ import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus, Pencil } from "lucide-react";
+import { Camera, Download, Tv, Trash2, Image as ImageIcon, ArrowLeft, Sparkles, Copy, Check, Users, Clock, ImagePlus, Pencil, LogOut } from "lucide-react";
+import { ModeratorsPanel } from "@/components/ModeratorsPanel";
+import { useRouter } from "@tanstack/react-router";
 
 
 type EventRow = { id: string; name: string; event_date: string | null; status: string };
@@ -180,6 +182,7 @@ function AdminPage() {
                 <Tv className="h-4 w-4 mr-2" /> Abrir telão
               </Link>
             </Button>
+            <SignOutButton />
           </div>
         </div>
       </header>
@@ -271,6 +274,8 @@ function AdminPage() {
               {sponsors.length === 0 && <p className="col-span-2 text-xs text-muted-foreground text-center py-4">Nenhum logo ainda</p>}
             </div>
           </Card>
+
+          <ModeratorsPanel />
         </aside>
 
         <section>
