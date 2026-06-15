@@ -161,11 +161,11 @@ function AfterFestPage() {
 
   const close = useCallback(() => setLightboxIdx(null), []);
   const prev = useCallback(() => {
-    setLightboxIdx(i => (i === null ? null : (i - 1 + photos.length) % photos.length));
-  }, [photos.length]);
+    setLightboxIdx(i => (i === null ? null : (i - 1 + filteredPhotos.length) % filteredPhotos.length));
+  }, [filteredPhotos.length]);
   const next = useCallback(() => {
-    setLightboxIdx(i => (i === null ? null : (i + 1) % photos.length));
-  }, [photos.length]);
+    setLightboxIdx(i => (i === null ? null : (i + 1) % filteredPhotos.length));
+  }, [filteredPhotos.length]);
 
   useEffect(() => {
     if (lightboxIdx === null) return;
@@ -178,7 +178,7 @@ function AfterFestPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [lightboxIdx, close, prev, next]);
 
-  const lightbox = lightboxIdx !== null ? photos[lightboxIdx] : null;
+  const lightbox = lightboxIdx !== null ? filteredPhotos[lightboxIdx] : null;
 
   async function share(p: Photo) {
     const url = p.image_url;
