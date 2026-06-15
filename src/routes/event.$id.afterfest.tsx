@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getClientId } from "@/lib/client-id";
-import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X, Heart, CheckCircle2, Circle } from "lucide-react";
+import { ArrowLeft, Download, Share2, ChevronLeft, ChevronRight, X, Heart, CheckCircle2, Circle, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
@@ -27,7 +27,22 @@ function AfterFestPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [downloading, setDownloading] = useState(false);
+  const [query, setQuery] = useState("");
   const clientId = useMemo(() => getClientId(), []);
+
+  const filteredPhotos = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return photos;
+    return photos.filter(p => (p.guest_name ?? "").toLowerCase().includes(q));
+  }, [photos, query]);
+
+  function formatDateTime(iso: string) {
+    try {
+      return new Date(iso).toLocaleString("pt-BR", {
+        day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+      });
+    } catch { return ""; }
+  }
 
   function toggleSelect(photoId: string) {
     setSelected(prev => {
@@ -146,11 +161,11 @@ function AfterFestPage() {
 
   const close = useCallback(() => setLightboxIdx(null), []);
   const prev = useCallback(() => {
-    setLightboxIdx(i => (i === null ? null : (i - 1 + photos.length) % photos.length));
-  }, [photos.length]);
+    setLightboxIdx(i => (i === null ? null : (i - 1 + filteredPhotos.length) % filteredPhotos.length));
+  }, [filteredPhotos.length]);
   const next = useCallback(() => {
-    setLightboxIdx(i => (i === null ? null : (i + 1) % photos.length));
-  }, [photos.length]);
+    setLightboxIdx(i => (i === null ? null : (i + 1) % filteredPhotos.length));
+  }, [filteredPhotos.length]);
 
   useEffect(() => {
     if (lightboxIdx === null) return;
@@ -163,7 +178,7 @@ function AfterFestPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [lightboxIdx, close, prev, next]);
 
-  const lightbox = lightboxIdx !== null ? photos[lightboxIdx] : null;
+  const lightbox = lightboxIdx !== null ? filteredPhotos[lightboxIdx] : null;
 
   async function share(p: Photo) {
     const url = p.image_url;
@@ -212,7 +227,7 @@ function AfterFestPage() {
                     Cancelar
                   </button>
                   <button
-                    onClick={() => setSelected(new Set(photos.map(p => p.id)))}
+                    onClick={() => setSelected(new Set(filteredPhotos.map(p => p.id)))}
                     className="text-sm px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-foreground"
                   >
                     Todas
@@ -237,6 +252,18 @@ function AfterFestPage() {
             </div>
           )}
         </div>
+        {photos.length > 0 && (
+          <div className="mt-4 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por nome..."
+              className="w-full sm:max-w-sm pl-9 pr-3 py-2 rounded-full bg-white/10 text-foreground placeholder:text-muted-foreground text-sm border border-white/10 focus:outline-none focus:border-foreground/30"
+            />
+          </div>
+        )}
       </header>
 
       <main className="max-w-6xl mx-auto px-6 mt-10">
@@ -244,19 +271,24 @@ function AfterFestPage() {
           <div className="text-center py-20 text-muted-foreground">
             Nenhuma foto registrada neste evento.
           </div>
+        ) : filteredPhotos.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            Nenhuma foto encontrada para "{query}".
+          </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {photos.map((p, i) => {
+            {filteredPhotos.map((p, i) => {
               const count = likeCounts[p.id] ?? 0;
               const liked = myLikes.has(p.id);
               return (
                 <div
                   key={p.id}
-                  className={`group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 transition ${
+                  className={`group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 transition animate-fade-in opacity-0 ${
                     selectMode && selected.has(p.id)
                       ? "border-foreground ring-4 ring-foreground/30"
                       : "border-foreground/10 hover:border-foreground"
                   }`}
+                  style={{ animationDelay: `${Math.min(i, 20) * 40}ms`, animationFillMode: "forwards" }}
                 >
                   <button
                     onClick={() => selectMode ? toggleSelect(p.id) : setLightboxIdx(i)}
@@ -271,11 +303,12 @@ function AfterFestPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
                   </button>
-                  {p.guest_name && (
-                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2 text-left font-display text-base pr-12">
-                      {p.guest_name}
-                    </div>
-                  )}
+                  <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-2 text-left pr-12">
+                    {p.guest_name && (
+                      <div className="font-display text-base leading-tight truncate">{p.guest_name}</div>
+                    )}
+                    <div className="text-[10px] text-white/70 mt-0.5">{formatDateTime(p.created_at)}</div>
+                  </div>
                   <button
                     onClick={() => toggleLike(p.id)}
                     className={`absolute bottom-2 right-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold backdrop-blur transition active:scale-90 ${
@@ -337,6 +370,7 @@ function AfterFestPage() {
             {lightbox.guest_name && (
               <p className="text-center text-white font-display text-3xl mt-4">{lightbox.guest_name}</p>
             )}
+            <p className="text-center text-white/50 text-xs mt-1">{formatDateTime(lightbox.created_at)}</p>
             <div className="flex justify-center gap-3 mt-4 flex-wrap">
               <button
                 onClick={() => toggleLike(lightbox.id)}
@@ -363,9 +397,9 @@ function AfterFestPage() {
                 <Share2 className="h-4 w-4" /> Compartilhar
               </button>
             </div>
-            {photos.length > 1 && lightboxIdx !== null && (
+            {filteredPhotos.length > 1 && lightboxIdx !== null && (
               <p className="text-center text-white/40 text-xs mt-3">
-                {lightboxIdx + 1} / {photos.length}
+                {lightboxIdx + 1} / {filteredPhotos.length}
               </p>
             )}
           </div>
