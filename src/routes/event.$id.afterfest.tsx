@@ -236,8 +236,8 @@ function AfterFestPage() {
               </button>
             </>
           )}
-          <div className="relative max-w-5xl w-full" onClick={e => e.stopPropagation()}>
-            <img src={lightbox.image_url} alt="" className="w-full max-h-[80vh] object-contain" />
+          <div className="relative max-w-5xl w-full flex flex-col items-center" onClick={e => e.stopPropagation()}>
+            <img src={lightbox.image_url} alt="" className="max-w-full max-h-[75vh] w-auto h-auto object-contain" />
             {lightbox.guest_name && (
               <p className="text-center text-white font-display text-3xl mt-4">{lightbox.guest_name}</p>
             )}
