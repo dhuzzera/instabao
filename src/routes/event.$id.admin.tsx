@@ -384,7 +384,15 @@ function AdminPage() {
         </aside>
 
         <section>
-          <h2 className="font-display text-2xl text-foreground mb-3">Fotos recebidas ({photos.length})</h2>
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+            <h2 className="font-display text-2xl text-foreground">Fotos recebidas ({photos.length})</h2>
+            {photos.length > 0 && (
+              <Button onClick={downloadAllPhotos} disabled={downloadingAll} variant="secondary" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                {downloadingAll ? "Baixando..." : "Baixar todas (.zip)"}
+              </Button>
+            )}
+          </div>
           {photos.length === 0 ? (
             <Card className="p-8 text-center border-dashed">
               <p className="text-muted-foreground">Aguardando fotos dos convidados 📸</p>
