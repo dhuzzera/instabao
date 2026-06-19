@@ -26,7 +26,7 @@ const credentialsSchema = z.object({
 function AuthPage() {
   const router = useRouter();
   const { redirect } = useSearch({ from: "/auth" });
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
