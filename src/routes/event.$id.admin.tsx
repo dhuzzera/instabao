@@ -367,7 +367,7 @@ function AdminPage() {
 
           <Card className="p-5">
             <h2 className="font-display text-xl text-foreground mb-3">Patrocinadores</h2>
-            <input ref={sponsorInput} type="file" accept="image/*" className="hidden" onChange={addSponsor} />
+            <input ref={sponsorInput} type="file" accept="image/*" multiple className="hidden" onChange={addSponsor} />
             <Button onClick={() => sponsorInput.current?.click()} variant="outline" className="w-full">
               <ImageIcon className="h-4 w-4 mr-2" /> Adicionar logo
             </Button>
