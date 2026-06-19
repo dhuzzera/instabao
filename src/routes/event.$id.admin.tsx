@@ -18,7 +18,7 @@ import { ThemePicker } from "@/components/ThemePicker";
 
 
 type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string; photo_seconds: number; sponsor_seconds: number; photos_per_block: number; short_code: string | null };
-type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
+type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string; storage_path: string | null };
 type Sponsor = { id: string; image_url: string; position: number };
 
 export const Route = createFileRoute("/event/$id/admin")({
@@ -159,21 +159,31 @@ function AdminPage() {
 
   async function deletePhoto(pid: string) {
     if (!confirm("Apagar esta foto?")) return;
-    // Ownership is enforced server-side: only the original uploader (same device/browser)
-    // can delete a photo via this RPC. Admin moderation requires login (não implementado).
-    const { data, error } = await supabase.rpc("delete_my_photo", {
-      _photo_id: pid,
-      _client_id: getClientId(),
-    });
-    if (error) { toast.error(error.message); return; }
-    if (data === false) {
-      toast.error("Apenas quem enviou esta foto pode apagá-la.");
-      return;
+
+    const photo = photos.find(p => p.id === pid);
+
+    // Delete storage file via API first (direct SQL delete is blocked by Supabase).
+    if (photo?.storage_path) {
+      await supabase.storage.from("event-media").remove([photo.storage_path]);
     }
+
+    const { error } = await supabase.from("photos").delete().eq("id", pid);
+    if (error) { toast.error(error.message); return; }
+
     loadAll();
   }
   async function deleteSponsor(sid: string) {
     if (!confirm("Remover patrocinador?")) return;
+
+    // Remove storage file via API if it belongs to our bucket.
+    const sponsor = sponsors.find(s => s.id === sid);
+    if (sponsor?.image_url) {
+      const match = sponsor.image_url.match(/\/object\/(?:public|sign)\/event-media\/(.+?)(?:\?|$)/);
+      if (match?.[1]) {
+        await supabase.storage.from("event-media").remove([decodeURIComponent(match[1])]);
+      }
+    }
+
     const { error } = await supabase.from("sponsors").delete().eq("id", sid);
     if (error) toast.error(error.message); else loadAll();
   }

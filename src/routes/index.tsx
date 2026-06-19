@@ -75,8 +75,22 @@ function Home() {
   }
 
   async function deleteEvent(id: string) {
+    // Fetch storage paths before deleting records (cascade will remove them from DB).
+    const { data: photoPaths } = await supabase
+      .from("photos")
+      .select("storage_path")
+      .eq("event_id", id)
+      .not("storage_path", "is", null);
+
     const { error } = await supabase.rpc("delete_event", { _event_id: id });
     if (error) { toast.error(error.message); return; }
+
+    // Remove files from Storage via API (the only supported method).
+    const paths = (photoPaths ?? []).map(p => p.storage_path as string).filter(Boolean);
+    if (paths.length > 0) {
+      await supabase.storage.from("event-media").remove(paths);
+    }
+
     toast.success("Evento excluído");
     setEvents(prev => prev.filter(e => e.id !== id));
   }
