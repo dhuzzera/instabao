@@ -142,9 +142,11 @@ function AdminPage() {
         });
         if (error) throw error;
         added++;
-      } catch (err) {
+      } catch (err: unknown) {
         failed++;
-        toast.error(err instanceof Error ? err.message : String(err));
+        const msg = err instanceof Error ? err.message
+          : (err as { message?: string })?.message ?? "Erro desconhecido";
+        toast.error(msg);
       }
     }
     if (added > 0) {
