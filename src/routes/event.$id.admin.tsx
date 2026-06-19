@@ -162,13 +162,19 @@ function AdminPage() {
 
     const photo = photos.find(p => p.id === pid);
 
-    // Delete storage file via API first (direct SQL delete is blocked by Supabase).
+    // Use the SECURITY DEFINER RPC to delete the DB record — it bypasses RLS
+    // and handles both admin and owner checks server-side.
+    const { data, error } = await supabase.rpc("delete_my_photo", {
+      _photo_id: pid,
+      _client_id: getClientId(),
+    });
+    if (error) { toast.error(error.message); return; }
+    if (data === false) { toast.error("Sem permissão para apagar esta foto."); return; }
+
+    // Delete the storage file via API (RPC no longer touches storage.objects).
     if (photo?.storage_path) {
       await supabase.storage.from("event-media").remove([photo.storage_path]);
     }
-
-    const { error } = await supabase.from("photos").delete().eq("id", pid);
-    if (error) { toast.error(error.message); return; }
 
     loadAll();
   }
