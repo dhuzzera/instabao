@@ -19,7 +19,7 @@ import { ThemePicker } from "@/components/ThemePicker";
 
 type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string; photo_seconds: number; sponsor_seconds: number; photos_per_block: number; short_code: string | null };
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string; storage_path: string | null };
-type Sponsor = { id: string; image_url: string; position: number };
+type Sponsor = { id: string; image_url: string; position: number; instagram: string | null };
 
 export const Route = createFileRoute("/event/$id/admin")({
   ssr: false,
@@ -129,8 +129,7 @@ function AdminPage() {
     }
   }
 
-  async function addSponsor(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
+  async function addSponsor(files: File[], instagram: string) {
     if (files.length === 0) return;
     let added = 0;
     let failed = 0;
@@ -139,6 +138,7 @@ function AdminPage() {
         const { url } = await uploadEventFile(id, f, "sponsor");
         const { error } = await supabase.from("sponsors").insert({
           event_id: id, image_url: url, position: sponsors.length + added,
+          instagram: instagram.trim().replace(/^@/, "") || null,
         });
         if (error) throw error;
         added++;
@@ -383,14 +383,20 @@ function AdminPage() {
 
           <Card className="p-5">
             <h2 className="font-display text-xl text-foreground mb-3">Patrocinadores</h2>
-            <input ref={sponsorInput} type="file" accept="image/*" multiple className="hidden" onChange={addSponsor} />
-            <Button onClick={() => sponsorInput.current?.click()} variant="outline" className="w-full">
-              <ImageIcon className="h-4 w-4 mr-2" /> Adicionar logo
-            </Button>
+            <input ref={sponsorInput} type="file" accept="image/*" multiple className="hidden"
+              onChange={e => {/* handled by dialog */}} />
+            <AddSponsorDialog onAdd={addSponsor} sponsorInput={sponsorInput} />
             <div className="mt-4 grid grid-cols-2 gap-2">
               {sponsors.map(s => (
-                <div key={s.id} className="relative group rounded-lg overflow-hidden bg-muted aspect-video">
-                  <img src={s.image_url} alt="" className="w-full h-full object-contain p-2" />
+                <div key={s.id} className="relative group rounded-lg overflow-hidden bg-muted">
+                  <div className="aspect-video">
+                    <img src={s.image_url} alt="" className="w-full h-full object-contain p-2" />
+                  </div>
+                  {s.instagram && (
+                    <p className="text-[10px] text-center text-muted-foreground pb-1 truncate px-1">
+                      @{s.instagram}
+                    </p>
+                  )}
                   <button onClick={() => deleteSponsor(s.id)}
                     className="absolute top-1 right-1 bg-black/70 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
                     <Trash2 className="h-3.5 w-3.5" />
@@ -566,4 +572,78 @@ function SlideshowTimingCard({ ev, onSaved }: { ev: EventRow | null; onSaved: ()
   );
 }
 
+function AddSponsorDialog({
+  onAdd,
+  sponsorInput,
+}: {
+  onAdd: (files: File[], instagram: string) => Promise<void>;
+  sponsorInput: React.RefObject<HTMLInputElement>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [instagram, setInstagram] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [adding, setAdding] = useState(false);
+  const localInput = useRef<HTMLInputElement>(null);
 
+  function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    setFiles(Array.from(e.target.files ?? []));
+  }
+
+  async function handleAdd() {
+    if (files.length === 0) { return; }
+    setAdding(true);
+    await onAdd(files, instagram);
+    setAdding(false);
+    setOpen(false);
+    setInstagram("");
+    setFiles([]);
+    if (localInput.current) localInput.current.value = "";
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="w-full">
+          <ImageIcon className="h-4 w-4 mr-2" /> Adicionar patrocinador
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Adicionar patrocinador</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Logo / imagem</Label>
+            <input ref={localInput} type="file" accept="image/*" multiple className="hidden" onChange={handleFiles} />
+            <Button variant="outline" className="w-full mt-2" onClick={() => localInput.current?.click()}>
+              <ImageIcon className="h-4 w-4 mr-2" />
+              {files.length > 0 ? `${files.length} arquivo${files.length > 1 ? "s" : ""} selecionado${files.length > 1 ? "s" : ""}` : "Escolher imagem"}
+            </Button>
+          </div>
+          <div>
+            <Label htmlFor="sp-instagram" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              Instagram (opcional)
+            </Label>
+            <div className="relative mt-2">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+              <Input
+                id="sp-instagram"
+                value={instagram}
+                onChange={e => setInstagram(e.target.value.replace(/^@/, ""))}
+                placeholder="perfil.do.patrocinador"
+                className="pl-7"
+                maxLength={60}
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={handleAdd} disabled={adding || files.length === 0}>
+            {adding ? "Adicionando…" : "Adicionar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

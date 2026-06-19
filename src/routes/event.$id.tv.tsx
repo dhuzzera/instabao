@@ -12,7 +12,7 @@ export const Route = createFileRoute("/event/$id/tv")({
 });
 
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
-type Sponsor = { id: string; image_url: string };
+type Sponsor = { id: string; image_url: string; instagram: string | null };
 
 const FADE_MS = 700;
 
@@ -280,6 +280,11 @@ function SlideLayer({ slide, visible, theme }: { slide: Slide | null; visible: b
         <div className="w-full h-full flex flex-col items-center justify-center bg-white text-black p-16 gap-8">
           <img src={slide.sponsor.image_url} alt="patrocinador"
             className="max-w-[70%] max-h-[60vh] object-contain" />
+          {slide.sponsor.instagram && (
+            <p className="font-display text-2xl md:text-4xl text-black/70">
+              @{slide.sponsor.instagram}
+            </p>
+          )}
           <p className="font-display text-3xl md:text-5xl text-black text-center">
             Quem faz a festa acontecer
           </p>
