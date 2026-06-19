@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw, X, Plus } from "lucide-react";
+import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw, X, Plus, Tv } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
 import { EventThemeScene } from "@/components/EventTheme";
 
@@ -164,7 +164,14 @@ export function UploadPage({ eventId: id }: { eventId: string }) {
           {sent > 1 ? `${sent} fotos no telão!` : "Foi pro telão!"}
         </h1>
         <p className="mt-2 text-muted-foreground animate-fade-up">Já estão rodando agora.</p>
-        <Button className="mt-8" onClick={() => setSent(0)}>Enviar mais fotos</Button>
+        <div className="flex flex-col sm:flex-row gap-3 mt-8 animate-fade-up">
+          <Button onClick={() => setSent(0)}>Enviar mais fotos</Button>
+          <Button asChild variant="outline">
+            <Link to="/event/$id/tv" params={{ id }} target="_blank">
+              <Tv className="h-4 w-4 mr-2" /> Ver telão
+            </Link>
+          </Button>
+        </div>
       </EventThemeScene>
     );
   }
