@@ -26,7 +26,7 @@ const credentialsSchema = z.object({
 function AuthPage() {
   const router = useRouter();
   const { redirect } = useSearch({ from: "/auth" });
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -39,6 +39,28 @@ function AuthPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (mode === "forgot") {
+      const parsed = z.string().trim().email("Email inválido").max(255).safeParse(email);
+      if (!parsed.success) {
+        toast.error(parsed.error.issues[0]?.message ?? "Dados inválidos");
+        return;
+      }
+      setBusy(true);
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Link de recuperação enviado! Verifique seu email.");
+        setMode("login");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Erro inesperado");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
     const parsed = credentialsSchema.safeParse({ email, password });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Dados inválidos");
@@ -80,11 +102,15 @@ function AuthPage() {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold mb-1">{mode === "login" ? "Entrar" : "Criar conta"}</h2>
+        <h2 className="text-xl font-bold mb-1">
+          {mode === "login" ? "Entrar" : mode === "signup" ? "Criar conta" : "Recuperar senha"}
+        </h2>
         <p className="text-sm text-muted-foreground mb-6">
           {mode === "login"
             ? "Use seu email e senha de moderador."
-            : "O primeiro usuário cadastrado vira admin automaticamente."}
+            : mode === "signup"
+            ? "O primeiro usuário cadastrado vira admin automaticamente."
+            : "Enviamos um link para redefinir sua senha."}
         </p>
 
         <form onSubmit={submit} className="space-y-4">
@@ -94,26 +120,52 @@ function AuthPage() {
               value={email} onChange={e => setEmail(e.target.value)}
               className="mt-2 rounded-xl bg-muted/60 border-border" />
           </div>
-          <div>
-            <Label htmlFor="password" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Senha</Label>
-            <Input id="password" type="password" required minLength={8} maxLength={128}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              value={password} onChange={e => setPassword(e.target.value)}
-              className="mt-2 rounded-xl bg-muted/60 border-border" />
-          </div>
+          {mode !== "forgot" && (
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Senha</Label>
+                {mode === "login" && (
+                  <button type="button" onClick={() => setMode("forgot")}
+                    className="text-[11px] font-semibold text-brand-gradient hover:underline">
+                    Esqueci a senha
+                  </button>
+                )}
+              </div>
+              <Input id="password" type="password" required minLength={8} maxLength={128}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                value={password} onChange={e => setPassword(e.target.value)}
+                className="mt-2 rounded-xl bg-muted/60 border-border" />
+            </div>
+          )}
           <Button type="submit" disabled={busy}
             className="w-full rounded-xl bg-brand-gradient text-white font-bold py-6 shadow-lg shadow-orange-200/80 border-0">
-            {busy ? "Aguarde…" : mode === "login" ? "Entrar" : "Criar conta"}
+            {busy
+              ? "Aguarde…"
+              : mode === "login"
+              ? "Entrar"
+              : mode === "signup"
+              ? "Criar conta"
+              : "Enviar link"}
           </Button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => setMode(m => (m === "login" ? "signup" : "login"))}
-          className="mt-5 w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {mode === "login" ? "Não tem conta? Criar uma" : "Já tem conta? Entrar"}
-        </button>
+        {mode !== "forgot" ? (
+          <button
+            type="button"
+            onClick={() => setMode(m => (m === "login" ? "signup" : "login"))}
+            className="mt-5 w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {mode === "login" ? "Não tem conta? Criar uma" : "Já tem conta? Entrar"}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setMode("login")}
+            className="mt-5 w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Voltar para entrar
+          </button>
+        )}
       </Card>
     </div>
   );
