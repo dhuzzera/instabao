@@ -131,7 +131,7 @@ function AuthPage() {
                   </button>
                 )}
               </div>
-              <Input id="password" type="password" required={mode !== "forgot"} minLength={8} maxLength={128}
+              <Input id="password" type="password" required minLength={8} maxLength={128}
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
                 value={password} onChange={e => setPassword(e.target.value)}
                 className="mt-2 rounded-xl bg-muted/60 border-border" />
