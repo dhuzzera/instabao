@@ -277,10 +277,10 @@ function SlideLayer({ slide, visible, theme }: { slide: Slide | null; visible: b
         />
       )}
       {slide?.kind === "sponsor" && (
-        <div className="w-full h-full grid place-items-center bg-white text-black p-16 relative">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-white text-black p-16 gap-8">
           <img src={slide.sponsor.image_url} alt="patrocinador"
-            className="max-w-[80%] max-h-[70%] object-contain" />
-          <p className="absolute bottom-16 font-display text-3xl md:text-5xl text-black">
+            className="max-w-[70%] max-h-[60vh] object-contain" />
+          <p className="font-display text-3xl md:text-5xl text-black text-center">
             Quem faz a festa acontecer
           </p>
         </div>
