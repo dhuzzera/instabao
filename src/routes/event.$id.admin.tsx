@@ -130,21 +130,31 @@ function AdminPage() {
   }
 
   async function addSponsor(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    try {
-      const { url } = await uploadEventFile(id, f, "sponsor");
-      const { error } = await supabase.from("sponsors").insert({
-        event_id: id, image_url: url, position: sponsors.length,
-      });
-      if (error) throw error;
-      toast.success("Patrocinador adicionado");
-      loadAll();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      if (sponsorInput.current) sponsorInput.current.value = "";
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    let added = 0;
+    let failed = 0;
+    for (const f of files) {
+      try {
+        const { url } = await uploadEventFile(id, f, "sponsor");
+        const { error } = await supabase.from("sponsors").insert({
+          event_id: id, image_url: url, position: sponsors.length + added,
+        });
+        if (error) throw error;
+        added++;
+      } catch (err) {
+        failed++;
+        toast.error(err instanceof Error ? err.message : String(err));
+      }
     }
+    if (added > 0) {
+      toast.success(`${added} patrocinador${added > 1 ? "es" : ""} adicionado${added > 1 ? "s" : ""}`);
+      loadAll();
+    }
+    if (failed > 0) {
+      toast.error(`${failed} falha${failed > 1 ? "s" : ""}`);
+    }
+    if (sponsorInput.current) sponsorInput.current.value = "";
   }
 
   async function deletePhoto(pid: string) {
@@ -357,7 +367,7 @@ function AdminPage() {
 
           <Card className="p-5">
             <h2 className="font-display text-xl text-foreground mb-3">Patrocinadores</h2>
-            <input ref={sponsorInput} type="file" accept="image/*" className="hidden" onChange={addSponsor} />
+            <input ref={sponsorInput} type="file" accept="image/*" multiple className="hidden" onChange={addSponsor} />
             <Button onClick={() => sponsorInput.current?.click()} variant="outline" className="w-full">
               <ImageIcon className="h-4 w-4 mr-2" /> Adicionar logo
             </Button>
