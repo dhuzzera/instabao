@@ -39,6 +39,28 @@ function AuthPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (mode === "forgot") {
+      const parsed = z.string().trim().email("Email inválido").max(255).safeParse(email);
+      if (!parsed.success) {
+        toast.error(parsed.error.issues[0]?.message ?? "Dados inválidos");
+        return;
+      }
+      setBusy(true);
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Link de recuperação enviado! Verifique seu email.");
+        setMode("login");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Erro inesperado");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
     const parsed = credentialsSchema.safeParse({ email, password });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Dados inválidos");
