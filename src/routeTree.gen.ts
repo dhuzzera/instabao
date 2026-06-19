@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ECodeRouteImport } from './routes/e.$code'
@@ -21,6 +22,11 @@ import { Route as ECodeTvRouteImport } from './routes/e.$code.tv'
 import { Route as ECodeAfterfestRouteImport } from './routes/e.$code.afterfest'
 import { Route as ECodeAdminRouteImport } from './routes/e.$code.admin'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -80,6 +86,7 @@ const ECodeAdminRoute = ECodeAdminRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/e/$code': typeof ECodeRouteWithChildren
   '/e/$code/admin': typeof ECodeAdminRoute
   '/e/$code/afterfest': typeof ECodeAfterfestRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/e/$code/admin': typeof ECodeAdminRoute
   '/e/$code/afterfest': typeof ECodeAfterfestRoute
   '/e/$code/tv': typeof ECodeTvRoute
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/e/$code': typeof ECodeRouteWithChildren
   '/e/$code/admin': typeof ECodeAdminRoute
   '/e/$code/afterfest': typeof ECodeAfterfestRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/reset-password'
     | '/e/$code'
     | '/e/$code/admin'
     | '/e/$code/afterfest'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/reset-password'
     | '/e/$code/admin'
     | '/e/$code/afterfest'
     | '/e/$code/tv'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/reset-password'
     | '/e/$code'
     | '/e/$code/admin'
     | '/e/$code/afterfest'
@@ -160,6 +172,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ECodeRoute: typeof ECodeRouteWithChildren
   EventIdAdminRoute: typeof EventIdAdminRoute
   EventIdAfterfestRoute: typeof EventIdAfterfestRoute
@@ -169,6 +182,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -268,6 +288,7 @@ const ECodeRouteWithChildren = ECodeRoute._addFileChildren(ECodeRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ECodeRoute: ECodeRouteWithChildren,
   EventIdAdminRoute: EventIdAdminRoute,
   EventIdAfterfestRoute: EventIdAfterfestRoute,
@@ -277,3 +298,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
