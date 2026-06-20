@@ -40,6 +40,11 @@ const STEPS: Step[] = [
     text: "Quem abre o telão pode curtir as fotos — os corações aparecem ao vivo.",
   },
   {
+    icon: Heart,
+    title: "Curta no AfterFest",
+    text: "Depois de enviar, entre no AfterFest pra ver todas as fotos e curtir as que você gostar mais.",
+  },
+  {
     icon: Tv,
     title: "AfterFest",
     text: "Depois da festa, todas as fotos ficam salvas no AfterFest pra rever e baixar.",
