@@ -139,6 +139,20 @@ function TVPage() {
             perBlock: row.photos_per_block ?? 5,
           };
         })
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "photo_likes" },
+        (payload) => {
+          const row = payload.new as { photo_id: string };
+          if (!seenIdsRef.current.has(row.photo_id)) return;
+          setLikes(prev => ({ ...prev, [row.photo_id]: (prev[row.photo_id] ?? 0) + 1 }));
+        })
+      .on("postgres_changes",
+        { event: "DELETE", schema: "public", table: "photo_likes" },
+        (payload) => {
+          const row = payload.old as { photo_id: string };
+          if (!seenIdsRef.current.has(row.photo_id)) return;
+          setLikes(prev => ({ ...prev, [row.photo_id]: Math.max(0, (prev[row.photo_id] ?? 1) - 1) }));
+        })
       .subscribe();
 
     async function refetchEvent() {
