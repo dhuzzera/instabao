@@ -137,10 +137,36 @@ function TVPage() {
     const onVis = () => { if (document.visibilityState === "visible") refetchEvent(); };
     document.addEventListener("visibilitychange", onVis);
 
+    // Fallback polling for new photos (in case Realtime drops)
+    async function pollNewPhotos() {
+      const { data } = await supabase
+        .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(200);
+      if (!data) return;
+      const fresh: Photo[] = [];
+      for (const p of data as Photo[]) {
+        if (!seenIdsRef.current.has(p.id)) {
+          seenIdsRef.current.add(p.id);
+          fresh.push(p);
+        }
+      }
+      if (fresh.length > 0) {
+        // Oldest first so they queue in order
+        fresh.reverse();
+        photosRef.current = [...photosRef.current, ...fresh];
+        freshQueueRef.current.push(...fresh);
+        force(x => x + 1);
+      }
+    }
+    const photoPoll = setInterval(pollNewPhotos, 30000);
+    const onVisPhotos = () => { if (document.visibilityState === "visible") pollNewPhotos(); };
+    document.addEventListener("visibilitychange", onVisPhotos);
+
     return () => {
       supabase.removeChannel(ch);
       clearInterval(poll);
+      clearInterval(photoPoll);
       document.removeEventListener("visibilitychange", onVis);
+      document.removeEventListener("visibilitychange", onVisPhotos);
     };
   }, [id]);
 
