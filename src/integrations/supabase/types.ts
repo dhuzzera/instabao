@@ -129,6 +129,7 @@ export type Database = {
           event_id: string
           id: string
           image_url: string
+          instagram: string | null
           position: number
         }
         Insert: {
@@ -136,6 +137,7 @@ export type Database = {
           event_id: string
           id?: string
           image_url: string
+          instagram?: string | null
           position?: number
         }
         Update: {
@@ -143,6 +145,7 @@ export type Database = {
           event_id?: string
           id?: string
           image_url?: string
+          instagram?: string | null
           position?: number
         }
         Relationships: [
