@@ -20,7 +20,7 @@ function AfterFestRoute() {
 
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string };
-type LikeRow = { photo_id: string; client_id: string };
+type LikeRow = { photo_id: string };
 
 export function AfterFestPage({ eventId: id }: { eventId: string }) {
 
@@ -103,18 +103,16 @@ export function AfterFestPage({ eventId: id }: { eventId: string }) {
 
       if (photosList.length > 0) {
         const ids = photosList.map(p => p.id);
-        const { data: likes } = await supabase
-          .from("photo_likes")
-          .select("photo_id,client_id")
-          .in("photo_id", ids);
+        const [{ data: likes }, { data: mineIds }] = await Promise.all([
+          supabase.from("photo_likes").select("photo_id").in("photo_id", ids),
+          supabase.rpc("my_liked_photo_ids", { _event_id: id, _client_id: clientId }),
+        ]);
         const counts: Record<string, number> = {};
-        const mine = new Set<string>();
-        for (const l of (likes ?? []) as LikeRow[]) {
+        for (const l of (likes ?? []) as { photo_id: string }[]) {
           counts[l.photo_id] = (counts[l.photo_id] ?? 0) + 1;
-          if (l.client_id === clientId) mine.add(l.photo_id);
         }
         setLikeCounts(counts);
-        setMyLikes(mine);
+        setMyLikes(new Set(((mineIds ?? []) as string[])));
       }
     })();
   }, [id, clientId]);
