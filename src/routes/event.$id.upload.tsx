@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw, X, Plus, Tv } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
 import { EventThemeScene } from "@/components/EventTheme";
+import { UploadTutorial } from "@/components/UploadTutorial";
 
 
 export const Route = createFileRoute("/event/$id/upload")({
@@ -179,6 +180,7 @@ export function UploadPage({ eventId: id }: { eventId: string }) {
   return (
     <EventThemeScene theme={theme} className="min-h-screen relative pb-12">
       <Toaster richColors position="top-center" />
+      <UploadTutorial eventId={id} />
       <header className="px-5 py-8 max-w-md mx-auto text-center flex flex-col items-center">
         <div className="story-ring-square mb-3">
           <img src={logoAsset.url} alt="Os Bão" className="h-20 w-20 rounded-2xl bg-white block" />
