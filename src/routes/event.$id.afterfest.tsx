@@ -199,8 +199,8 @@ export function AfterFestPage({ eventId: id }: { eventId: string }) {
     <EventThemeScene theme={ev?.theme} className="min-h-screen relative pb-20">
       <Toaster richColors position="top-center" />
       <header className="max-w-6xl mx-auto px-6 pt-8">
-        <Link to="/" className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:underline">
-          <ArrowLeft className="h-3.5 w-3.5" /> Eventos
+        <Link to="/event/$id/upload" params={{ id }} className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:underline">
+          <ArrowLeft className="h-3.5 w-3.5" /> Enviar foto
         </Link>
         <div className="flex items-center gap-4 mt-4">
           <div className="story-ring-square shrink-0">
