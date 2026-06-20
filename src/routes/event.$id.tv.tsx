@@ -290,10 +290,14 @@ function TVPage() {
   function handleAreaClick(e: React.MouseEvent<HTMLDivElement>) {
     const x = e.clientX;
     const w = window.innerWidth;
-    if (x < w * 0.25) { handlePrev(); return; }
-    if (x > w * 0.75) { handleNext(); return; }
-    // Middle area → fullscreen
-    document.documentElement.requestFullscreen?.().catch(() => {});
+    // Instagram Stories style: left half = prev, right half = next
+    if (x < w * 0.5) handlePrev();
+    else handleNext();
+  }
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    else document.documentElement.requestFullscreen?.().catch(() => {});
   }
 
   // Keyboard navigation
