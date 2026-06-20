@@ -1,8 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const BUCKET = "event-media";
-// 10 years
-const SIGNED_TTL = 60 * 60 * 24 * 365 * 10;
 
 export type UploadResult = { url: string; path: string };
 
@@ -45,13 +43,8 @@ export async function uploadEventFile(
       .upload(path, file, { contentType: (file as File).type || "image/jpeg", upsert: false });
     if (error) throw error;
   }, "upload");
-  const data = await withRetry(async () => {
-    const { data, error } = await supabase.storage
-      .from(BUCKET)
-      .createSignedUrl(path, SIGNED_TTL);
-    if (error || !data) throw error ?? new Error("Failed to sign URL");
-    return data;
-  }, "signUrl");
-  return { url: data.signedUrl, path };
+  // Bucket is public — use permanent public URL instead of expiring signed URL
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return { url: data.publicUrl, path };
 }
 
