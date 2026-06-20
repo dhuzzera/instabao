@@ -60,7 +60,26 @@ function TVPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setUploadUrl(`${window.location.origin}/event/${id}/upload`);
+      clientIdRef.current = getClientId();
     }
+  }, [id]);
+
+  // Load initial like counts and my likes for this event
+  useEffect(() => {
+    (async () => {
+      const { data: ph } = await supabase
+        .from("photos").select("id").eq("event_id", id);
+      const ids = (ph ?? []).map(p => p.id);
+      if (ids.length === 0) return;
+      const { data: allLikes } = await supabase
+        .from("photo_likes").select("photo_id").in("photo_id", ids);
+      const counts: Record<string, number> = {};
+      for (const l of allLikes ?? []) counts[l.photo_id] = (counts[l.photo_id] ?? 0) + 1;
+      setLikes(counts);
+      const cid = getClientId();
+      const { data: mine } = await supabase.rpc("my_liked_photo_ids", { _event_id: id, _client_id: cid });
+      setMyLikes(new Set((mine ?? []) as string[]));
+    })();
   }, [id]);
 
   useEffect(() => {
