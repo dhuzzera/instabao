@@ -377,6 +377,14 @@ function TVPage() {
         </div>
       )}
 
+      <button
+        onClick={e => { e.stopPropagation(); toggleFullscreen(); }}
+        className={`absolute bottom-4 left-6 z-30 p-2 rounded-full bg-black/40 backdrop-blur text-white hover:bg-black/60 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0"}`}
+        aria-label="Tela cheia"
+      >
+        <Maximize2 className="h-5 w-5" />
+      </button>
+
       <div className="absolute bottom-4 right-6 text-xs opacity-60 z-20">
         InstaBão · {status === "finished" ? "memórias" : "ao vivo"}
       </div>
