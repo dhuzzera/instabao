@@ -39,6 +39,9 @@ function TVPage() {
   const idxRef = useRef({ photoIdx: 0, blockCount: 0, sponsorIdx: 0 });
   const freshQueueRef = useRef<Photo[]>([]);
   const seenIdsRef = useRef<Set<string>>(new Set());
+  const [likes, setLikes] = useState<Record<string, number>>({});
+  const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
+  const clientIdRef = useRef<string>("");
 
   // Manual navigation state
   const pausedRef = useRef(false);
