@@ -441,7 +441,18 @@ function TVPage() {
         <Maximize2 className="h-5 w-5" />
       </button>
 
-      <div className="absolute bottom-4 right-6 text-xs opacity-60 z-20">
+      {currentPhotoId && (
+        <button
+          onClick={e => { e.stopPropagation(); toggleLike(); }}
+          className={`absolute bottom-8 right-8 z-30 flex items-center gap-3 px-5 py-3 rounded-full backdrop-blur transition-all duration-300 ${iLiked ? "bg-red-500/90 text-white scale-105" : "bg-black/40 text-white hover:bg-black/60"}`}
+          aria-label={iLiked ? "Descurtir" : "Curtir"}
+        >
+          <Heart className={`h-7 w-7 transition-transform ${iLiked ? "fill-current scale-110" : ""}`} />
+          <span className="font-display text-2xl tabular-nums">{currentLikes}</span>
+        </button>
+      )}
+
+      <div className="absolute bottom-4 right-1/2 translate-x-1/2 text-xs opacity-60 z-20">
         InstaBão · {status === "finished" ? "memórias" : "ao vivo"}
       </div>
     </div>
