@@ -61,9 +61,12 @@ function TVPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: ev } = await supabase.from("events").select("name,status,theme,photo_seconds,sponsor_seconds,photos_per_block").eq("id", id).single();
+      const { data: ev } = await supabase.from("events").select("name,status,theme,photo_seconds,sponsor_seconds,photos_per_block,short_code").eq("id", id).single();
       if (ev) {
         setEventName(ev.name); setStatus(ev.status); setTheme(ev.theme ?? "default");
+        if (typeof window !== "undefined" && ev.short_code) {
+          setUploadUrl(`${window.location.origin}/e/${ev.short_code}`);
+        }
         timingRef.current = {
           photoMs: (ev.photo_seconds ?? 5) * 1000,
           sponsorMs: (ev.sponsor_seconds ?? 7) * 1000,
