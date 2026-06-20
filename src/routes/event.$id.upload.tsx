@@ -168,8 +168,13 @@ export function UploadPage({ eventId: id }: { eventId: string }) {
         <div className="flex flex-col sm:flex-row gap-3 mt-8 animate-fade-up">
           <Button onClick={() => setSent(0)}>Enviar mais fotos</Button>
           <Button asChild variant="outline">
+            <Link to="/event/$id/afterfest" params={{ id }}>
+              <Heart className="h-4 w-4 mr-2" /> Ver e curtir todas
+            </Link>
+          </Button>
+          <Button asChild variant="ghost">
             <Link to="/event/$id/tv" params={{ id }} target="_blank">
-              <Tv className="h-4 w-4 mr-2" /> Ver telão
+              <Tv className="h-4 w-4 mr-2" /> Telão
             </Link>
           </Button>
         </div>
