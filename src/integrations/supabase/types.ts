@@ -209,6 +209,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      my_liked_photo_ids: {
+        Args: { _client_id: string; _event_id: string }
+        Returns: string[]
+      }
       set_moderator_by_email: {
         Args: { _email: string; _grant: boolean }
         Returns: string
