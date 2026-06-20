@@ -20,7 +20,7 @@ function AfterFestRoute() {
 
 type Photo = { id: string; image_url: string; guest_name: string | null; created_at: string };
 type EventRow = { id: string; name: string; event_date: string | null; status: string; theme: string };
-type LikeRow = { photo_id: string; client_id: string };
+type LikeRow = { photo_id: string };
 
 export function AfterFestPage({ eventId: id }: { eventId: string }) {
 
