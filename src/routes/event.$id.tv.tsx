@@ -349,6 +349,25 @@ function TVPage() {
 
   const hasContent = photosRef.current.length > 0 || slideA || slideB;
   const t = getTheme(theme);
+  const currentSlide = showA ? slideA : slideB;
+  const currentPhotoId = currentSlide?.kind === "photo" ? currentSlide.photo.id : null;
+  const currentLikes = currentPhotoId ? (likes[currentPhotoId] ?? 0) : 0;
+  const iLiked = currentPhotoId ? myLikes.has(currentPhotoId) : false;
+
+  async function toggleLike() {
+    if (!currentPhotoId) return;
+    const cid = clientIdRef.current || getClientId();
+    const photoId = currentPhotoId;
+    if (iLiked) {
+      setMyLikes(prev => { const n = new Set(prev); n.delete(photoId); return n; });
+      setLikes(prev => ({ ...prev, [photoId]: Math.max(0, (prev[photoId] ?? 1) - 1) }));
+      await supabase.rpc("delete_my_like", { _photo_id: photoId, _client_id: cid });
+    } else {
+      setMyLikes(prev => new Set(prev).add(photoId));
+      setLikes(prev => ({ ...prev, [photoId]: (prev[photoId] ?? 0) + 1 }));
+      await supabase.from("photo_likes").insert({ photo_id: photoId, client_id: cid });
+    }
+  }
 
   return (
     <div
