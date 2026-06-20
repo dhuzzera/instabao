@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeOverlay, PhotoFrame } from "@/components/EventTheme";
 import { getTheme } from "@/lib/themes";
@@ -290,10 +290,14 @@ function TVPage() {
   function handleAreaClick(e: React.MouseEvent<HTMLDivElement>) {
     const x = e.clientX;
     const w = window.innerWidth;
-    if (x < w * 0.25) { handlePrev(); return; }
-    if (x > w * 0.75) { handleNext(); return; }
-    // Middle area → fullscreen
-    document.documentElement.requestFullscreen?.().catch(() => {});
+    // Instagram Stories style: left half = prev, right half = next
+    if (x < w * 0.5) handlePrev();
+    else handleNext();
+  }
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    else document.documentElement.requestFullscreen?.().catch(() => {});
   }
 
   // Keyboard navigation
@@ -372,6 +376,14 @@ function TVPage() {
           </div>
         </div>
       )}
+
+      <button
+        onClick={e => { e.stopPropagation(); toggleFullscreen(); }}
+        className={`absolute bottom-4 left-6 z-30 p-2 rounded-full bg-black/40 backdrop-blur text-white hover:bg-black/60 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0"}`}
+        aria-label="Tela cheia"
+      >
+        <Maximize2 className="h-5 w-5" />
+      </button>
 
       <div className="absolute bottom-4 right-6 text-xs opacity-60 z-20">
         InstaBão · {status === "finished" ? "memórias" : "ao vivo"}
