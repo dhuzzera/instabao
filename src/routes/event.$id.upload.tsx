@@ -180,6 +180,7 @@ export function UploadPage({ eventId: id }: { eventId: string }) {
   return (
     <EventThemeScene theme={theme} className="min-h-screen relative pb-12">
       <Toaster richColors position="top-center" />
+      <UploadTutorial eventId={id} />
       <header className="px-5 py-8 max-w-md mx-auto text-center flex flex-col items-center">
         <div className="story-ring-square mb-3">
           <img src={logoAsset.url} alt="Os Bão" className="h-20 w-20 rounded-2xl bg-white block" />
