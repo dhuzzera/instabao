@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw, X, Plus, Tv } from "lucide-react";
+import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw, X, Plus, Tv, Heart } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
 import { EventThemeScene } from "@/components/EventTheme";
 import { UploadTutorial } from "@/components/UploadTutorial";
