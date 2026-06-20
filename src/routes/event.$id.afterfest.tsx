@@ -285,7 +285,7 @@ export function AfterFestPage({ eventId: id }: { eventId: string }) {
               return (
                 <div
                   key={p.id}
-                  className={`group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 transition animate-fade-in opacity-0 ${
+                  className={`group relative aspect-square bg-muted rounded-xl overflow-hidden border-2 transition ${
                     selectMode && selected.has(p.id)
                       ? "border-foreground ring-4 ring-foreground/30"
                       : "border-foreground/10 hover:border-foreground"
