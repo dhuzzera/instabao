@@ -74,7 +74,7 @@ function TVPage() {
         };
       }
       const { data: ph } = await supabase
-        .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
+        .from("photos").select("id,event_id,image_url,storage_path,guest_name,created_at").eq("event_id", id).order("created_at", { ascending: false }).limit(500);
       const initial = (ph ?? []) as Photo[];
       photosRef.current = initial;
       seenIdsRef.current = new Set(initial.map(p => p.id));
@@ -140,7 +140,7 @@ function TVPage() {
     // Fallback polling for new photos (in case Realtime drops)
     async function pollNewPhotos() {
       const { data } = await supabase
-        .from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }).limit(200);
+        .from("photos").select("id,event_id,image_url,storage_path,guest_name,created_at").eq("event_id", id).order("created_at", { ascending: false }).limit(200);
       if (!data) return;
       const fresh: Photo[] = [];
       for (const p of data as Photo[]) {

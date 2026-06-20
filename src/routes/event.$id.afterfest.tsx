@@ -95,7 +95,7 @@ export function AfterFestPage({ eventId: id }: { eventId: string }) {
     (async () => {
       const [{ data: e }, { data: ph }] = await Promise.all([
         supabase.from("events").select("*").eq("id", id).single(),
-        supabase.from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }),
+        supabase.from("photos").select("id,event_id,image_url,storage_path,guest_name,created_at").eq("event_id", id).order("created_at", { ascending: false }),
       ]);
       if (e) setEv(e as EventRow);
       const photosList = (ph ?? []) as Photo[];

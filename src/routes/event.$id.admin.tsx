@@ -47,7 +47,7 @@ function AdminPage() {
   async function loadAll() {
     const [{ data: e }, { data: ph }, { data: sp }] = await Promise.all([
       supabase.from("events").select("*,short_code").eq("id", id).single(),
-      supabase.from("photos").select("*").eq("event_id", id).order("created_at", { ascending: false }),
+      supabase.from("photos").select("id,event_id,image_url,storage_path,guest_name,created_at").eq("event_id", id).order("created_at", { ascending: false }),
       supabase.from("sponsors").select("*").eq("event_id", id).order("position"),
     ]);
     if (e) setEv(e as EventRow);
