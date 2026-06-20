@@ -262,6 +262,13 @@ export function UploadPage({ eventId: id }: { eventId: string }) {
             {sending ? (progress || "Enviando…") : items.length > 1 ? `Enviar ${items.length} fotos` : "Enviar pro telão"}
           </Button>
 
+          <Link
+            to="/event/$id/afterfest"
+            params={{ id }}
+            className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground py-3"
+          >
+            <Heart className="h-4 w-4" /> Ver e curtir todas as fotos
+          </Link>
         </form>
       </main>
     </EventThemeScene>
