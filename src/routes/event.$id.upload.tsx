@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw, X, Plus, Tv } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
 import { EventThemeScene } from "@/components/EventTheme";
+import { UploadTutorial } from "@/components/UploadTutorial";
 
 
 export const Route = createFileRoute("/event/$id/upload")({
