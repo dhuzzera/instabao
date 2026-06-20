@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeOverlay, PhotoFrame } from "@/components/EventTheme";
 import { getTheme } from "@/lib/themes";
