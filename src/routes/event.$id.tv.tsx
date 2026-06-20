@@ -385,7 +385,3 @@ function SlideLayer({ slide, visible, theme }: { slide: Slide | null; visible: b
   );
 }
 
-export const Route = createFileRoute("/event/$id/tv")({
-  head: () => ({ meta: [{ title: "Telão · InstaBão" }] }),
-  component: TVPage,
-});

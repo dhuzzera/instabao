@@ -579,7 +579,7 @@ function AddSponsorDialog({
   sponsorInput,
 }: {
   onAdd: (files: File[], instagram: string) => Promise<void>;
-  sponsorInput: React.RefObject<HTMLInputElement>;
+  sponsorInput: React.RefObject<HTMLInputElement | null>;
 }) {
   const [open, setOpen] = useState(false);
   const [instagram, setInstagram] = useState("");
