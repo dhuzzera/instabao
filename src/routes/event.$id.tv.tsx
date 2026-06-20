@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeOverlay, PhotoFrame } from "@/components/EventTheme";
 import { getTheme } from "@/lib/themes";
+import { getClientId } from "@/lib/client-id";
 
 export const Route = createFileRoute("/event/$id/tv")({
   head: () => ({ meta: [{ title: "Telão · InstaBão" }] }),
@@ -38,6 +39,9 @@ function TVPage() {
   const idxRef = useRef({ photoIdx: 0, blockCount: 0, sponsorIdx: 0 });
   const freshQueueRef = useRef<Photo[]>([]);
   const seenIdsRef = useRef<Set<string>>(new Set());
+  const [likes, setLikes] = useState<Record<string, number>>({});
+  const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
+  const clientIdRef = useRef<string>("");
 
   // Manual navigation state
   const pausedRef = useRef(false);
@@ -56,7 +60,26 @@ function TVPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setUploadUrl(`${window.location.origin}/event/${id}/upload`);
+      clientIdRef.current = getClientId();
     }
+  }, [id]);
+
+  // Load initial like counts and my likes for this event
+  useEffect(() => {
+    (async () => {
+      const { data: ph } = await supabase
+        .from("photos").select("id").eq("event_id", id);
+      const ids = (ph ?? []).map(p => p.id);
+      if (ids.length === 0) return;
+      const { data: allLikes } = await supabase
+        .from("photo_likes").select("photo_id").in("photo_id", ids);
+      const counts: Record<string, number> = {};
+      for (const l of allLikes ?? []) counts[l.photo_id] = (counts[l.photo_id] ?? 0) + 1;
+      setLikes(counts);
+      const cid = getClientId();
+      const { data: mine } = await supabase.rpc("my_liked_photo_ids", { _event_id: id, _client_id: cid });
+      setMyLikes(new Set((mine ?? []) as string[]));
+    })();
   }, [id]);
 
   useEffect(() => {
@@ -115,6 +138,20 @@ function TVPage() {
             sponsorMs: (row.sponsor_seconds ?? 7) * 1000,
             perBlock: row.photos_per_block ?? 5,
           };
+        })
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "photo_likes" },
+        (payload) => {
+          const row = payload.new as { photo_id: string };
+          if (!seenIdsRef.current.has(row.photo_id)) return;
+          setLikes(prev => ({ ...prev, [row.photo_id]: (prev[row.photo_id] ?? 0) + 1 }));
+        })
+      .on("postgres_changes",
+        { event: "DELETE", schema: "public", table: "photo_likes" },
+        (payload) => {
+          const row = payload.old as { photo_id: string };
+          if (!seenIdsRef.current.has(row.photo_id)) return;
+          setLikes(prev => ({ ...prev, [row.photo_id]: Math.max(0, (prev[row.photo_id] ?? 1) - 1) }));
         })
       .subscribe();
 
@@ -312,6 +349,25 @@ function TVPage() {
 
   const hasContent = photosRef.current.length > 0 || slideA || slideB;
   const t = getTheme(theme);
+  const currentSlide = showA ? slideA : slideB;
+  const currentPhotoId = currentSlide?.kind === "photo" ? currentSlide.photo.id : null;
+  const currentLikes = currentPhotoId ? (likes[currentPhotoId] ?? 0) : 0;
+  const iLiked = currentPhotoId ? myLikes.has(currentPhotoId) : false;
+
+  async function toggleLike() {
+    if (!currentPhotoId) return;
+    const cid = clientIdRef.current || getClientId();
+    const photoId = currentPhotoId;
+    if (iLiked) {
+      setMyLikes(prev => { const n = new Set(prev); n.delete(photoId); return n; });
+      setLikes(prev => ({ ...prev, [photoId]: Math.max(0, (prev[photoId] ?? 1) - 1) }));
+      await supabase.rpc("delete_my_like", { _photo_id: photoId, _client_id: cid });
+    } else {
+      setMyLikes(prev => new Set(prev).add(photoId));
+      setLikes(prev => ({ ...prev, [photoId]: (prev[photoId] ?? 0) + 1 }));
+      await supabase.from("photo_likes").insert({ photo_id: photoId, client_id: cid });
+    }
+  }
 
   return (
     <div
@@ -385,7 +441,18 @@ function TVPage() {
         <Maximize2 className="h-5 w-5" />
       </button>
 
-      <div className="absolute bottom-4 right-6 text-xs opacity-60 z-20">
+      {currentPhotoId && (
+        <button
+          onClick={e => { e.stopPropagation(); toggleLike(); }}
+          className={`absolute bottom-8 right-8 z-30 flex items-center gap-3 px-5 py-3 rounded-full backdrop-blur transition-all duration-300 ${iLiked ? "bg-red-500/90 text-white scale-105" : "bg-black/40 text-white hover:bg-black/60"}`}
+          aria-label={iLiked ? "Descurtir" : "Curtir"}
+        >
+          <Heart className={`h-7 w-7 transition-transform ${iLiked ? "fill-current scale-110" : ""}`} />
+          <span className="font-display text-2xl tabular-nums">{currentLikes}</span>
+        </button>
+      )}
+
+      <div className="absolute bottom-4 right-1/2 translate-x-1/2 text-xs opacity-60 z-20">
         InstaBão · {status === "finished" ? "memórias" : "ao vivo"}
       </div>
     </div>
