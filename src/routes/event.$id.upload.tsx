@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw, X, Plus, Tv } from "lucide-react";
+import { Camera, CheckCircle2, Upload, RotateCw, RotateCcw, X, Plus, Tv, Heart } from "lucide-react";
 import logoAsset from "@/assets/logo-osbao.png.asset.json";
 import { EventThemeScene } from "@/components/EventTheme";
 import { UploadTutorial } from "@/components/UploadTutorial";
@@ -168,8 +168,13 @@ export function UploadPage({ eventId: id }: { eventId: string }) {
         <div className="flex flex-col sm:flex-row gap-3 mt-8 animate-fade-up">
           <Button onClick={() => setSent(0)}>Enviar mais fotos</Button>
           <Button asChild variant="outline">
+            <Link to="/event/$id/afterfest" params={{ id }}>
+              <Heart className="h-4 w-4 mr-2" /> Ver e curtir todas
+            </Link>
+          </Button>
+          <Button asChild variant="ghost">
             <Link to="/event/$id/tv" params={{ id }} target="_blank">
-              <Tv className="h-4 w-4 mr-2" /> Ver telão
+              <Tv className="h-4 w-4 mr-2" /> Telão
             </Link>
           </Button>
         </div>
@@ -257,6 +262,13 @@ export function UploadPage({ eventId: id }: { eventId: string }) {
             {sending ? (progress || "Enviando…") : items.length > 1 ? `Enviar ${items.length} fotos` : "Enviar pro telão"}
           </Button>
 
+          <Link
+            to="/event/$id/afterfest"
+            params={{ id }}
+            className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground py-3"
+          >
+            <Heart className="h-4 w-4" /> Ver e curtir todas as fotos
+          </Link>
         </form>
       </main>
     </EventThemeScene>
